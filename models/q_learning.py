@@ -6,8 +6,8 @@ from utils import tempered_softmax
 
 class QLearning(BaseRL):
 
-    def __init__(self, n_options, state, lr, temperature, steps):
-        BaseRL.__init__(self, n_options, state)
+    def __init__(self, n_options, lr, temperature, steps):
+        BaseRL.__init__(self, domain=n_options, state=None)
         # parameters
         self.lr = lr
         self.temperature = temperature
