@@ -3,30 +3,32 @@ import numpy as np
 from models.model import BaseRL
 from utils import tempered_softmax
 
+# TODO: Update this class to be compatible with Q-values over GridWorld - i.e. self.qs.shape == (3,4,n_choices)
+# It should be possible to barely update this code and get it to work, using the new qs
+
 
 class QLearning(BaseRL):
 
-    def __init__(self, n_options, lr, temperature, steps):
-        BaseRL.__init__(self, domain=n_options, state=None)
-        # parameters
+    def __init__(self, actions, domain_shape, state, lr, temperature):
+        BaseRL.__init__(self, domain=domain_shape, state=state)
         self.lr = lr
         self.temperature = temperature
-        # arrays
-        self.qs = np.ones((steps+1, n_options)) * 0.5
-        self.time = 0
+        q_shape = list(domain_shape) + [len(actions)]
+        self.state = state
+        # self.qs = np.ones(len(actions)) * 0.5
+        self.qs = np.ones(q_shape) * 0.5
 
     def act(self):
-        p_values = tempered_softmax(self.qs[self.time], self.temperature)
-        choice = np.random.choice(len(p_values), 1, p=p_values)[0]
-        self.time += 1
-        return choice
+        p_values = tempered_softmax(self.qs[tuple(self.state)], self.temperature)
+        action = np.random.choice(len(p_values), 1, p=p_values).item()
+        return self.state, action
 
-    def update(self, choice, reward):
-        delta = reward - self.qs[self.time-1, choice]
-        self.qs[self.time] = self.qs[self.time-1]
-        self.qs[self.time, choice] += self.lr * delta
+    def update(self, new_state, action, reward):
+        delta = reward - self.qs[tuple(new_state)][action]
+        self.qs[tuple(new_state)][action] += self.lr * delta
+        self.state = new_state
 
     def get_predictions(self):
-        return self.qs[-1]
+        return self.qs
 
 

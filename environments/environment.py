@@ -4,7 +4,7 @@ class BaseEnvironment:
     def __init__(self):
         ...
 
-    def sample(self, choice) -> float:
+    def interact(self, state, action) -> float:
         ...
 
     def get_domain(self):

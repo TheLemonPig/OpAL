@@ -6,13 +6,17 @@ from environments.environment import BaseEnvironment
 
 class BanditTask(BaseEnvironment):
 
-    def __init__(self, ps: List):
+    def __init__(self, ps: np.array, start=None):
         BaseEnvironment.__init__(self)
-        self.ps = ps
+        self.actions = ps.reshape((1, -1))
+        self._start = np.zeros((1, ), dtype=np.int32) if start is None else start
 
-    def sample(self, choice):
-        p = self.ps[choice]
-        return np.random.choice(2, 1, p=[1-p, p])[0]
+    def interact(self, state, action):
+        p = self.actions[tuple(state)][action]
+        return self._start, np.random.choice(2, 1, p=[1-p, p]).item()
+
+    def get_model(self):
+        return len(self.actions)
 
     def get_domain(self):
-        return len(self.ps)
+        return self._start

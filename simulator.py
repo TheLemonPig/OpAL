@@ -3,9 +3,10 @@ from tqdm import tqdm
 
 class Simulator:
 
-    def __init__(self, model, environment):
+    def __init__(self, model, environment, interaction_space):
         self.model = model
         self.environment = environment
+        self.interaction_space = interaction_space
         self.results = None
 
     def simulate(self, steps):
@@ -14,9 +15,10 @@ class Simulator:
         return self.get_results()
 
     def step(self):
-        choice = self.model.act()
-        reward = self.environment.sample(choice)
-        self.model.update(choice, reward)
+        state, action = self.model.act()
+        interaction = self.interaction_space[action]
+        new_state, reward = self.environment.interact(state, interaction)
+        self.model.update(new_state, action, reward)
 
     def get_results(self):
         return self.model.get_predictions()
