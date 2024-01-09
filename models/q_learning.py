@@ -3,9 +3,6 @@ import numpy as np
 from models.model import BaseRL
 from utils import tempered_softmax
 
-# TODO: Update this class to be compatible with Q-values over GridWorld - i.e. self.qs.shape == (3,4,n_choices)
-# It should be possible to barely update this code and get it to work, using the new qs
-
 
 class QLearning(BaseRL):
 
@@ -16,7 +13,7 @@ class QLearning(BaseRL):
         q_shape = list(domain_shape) + [len(actions)]
         self.state = state
         # self.qs = np.ones(len(actions)) * 0.5
-        self.qs = np.ones(q_shape) * 0.5
+        self.qs = np.ones(q_shape) * 0.
 
     def act(self):
         p_values = tempered_softmax(self.qs[tuple(self.state)], self.temperature)

@@ -7,11 +7,13 @@ class Simulator:
         self.model = model
         self.environment = environment
         self.interaction_space = interaction_space
-        self.results = None
+        self.net_reward = 0
 
     def simulate(self, steps):
+        total_reward = 0
         for _ in tqdm(range(steps)):
-            self.step()
+            total_reward += self.step()
+        self.net_reward = total_reward / steps
         return self.get_results()
 
     def step(self):
@@ -19,6 +21,7 @@ class Simulator:
         interaction = self.interaction_space[action]
         new_state, reward = self.environment.interact(state, interaction)
         self.model.update(new_state, action, reward)
+        return reward
 
     def get_results(self):
-        return self.model.get_predictions()
+        return self.model.get_predictions(), self.net_reward
