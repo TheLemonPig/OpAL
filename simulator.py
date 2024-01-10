@@ -3,10 +3,11 @@ from tqdm import tqdm
 
 class Simulator:
 
-    def __init__(self, model, environment, interaction_space):
+    def __init__(self, model, environment, interaction_space, terminals=None):
         self.model = model
         self.environment = environment
         self.interaction_space = interaction_space
+        self.terminals = {self.model.state: 0} if terminals is None else terminals
         self.net_reward = 0
 
     def simulate(self, steps):
@@ -21,6 +22,9 @@ class Simulator:
         interaction = self.interaction_space[action]
         new_state, reward = self.environment.interact(state, interaction)
         self.model.update(new_state, action, reward)
+        if self.terminals and new_state in self.terminals:
+            # reinitialize RL path
+            self.model.state = self.environment.get_start()
         return reward
 
     def get_results(self):

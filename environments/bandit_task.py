@@ -12,11 +12,11 @@ class BanditTask(BaseEnvironment):
         self._start = np.zeros((1, ), dtype=np.int32) if start is None else start
 
     def interact(self, state, action):
-        p = self.actions[tuple(state)][action]
+        p = self.actions[state][action]
         return self._start, np.random.choice(2, 1, p=[1-p, p]).item()
 
     def get_model(self):
         return len(self.actions)
 
-    def get_domain(self):
+    def get_start(self):
         return self._start

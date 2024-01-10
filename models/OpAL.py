@@ -3,6 +3,9 @@ import numpy as np
 from models.model import BaseRL
 from utils import tempered_softmax
 
+# TODO: Update OpAL to be an actor-critic model, per Alana's code
+# TODO: Redefine OpAL as a subclass of actor-critic model
+
 
 class OpAL(BaseRL):
 
@@ -17,7 +20,7 @@ class OpAL(BaseRL):
         self.ns = np.ones(v_shape) * 0.
 
     def act(self):
-        net_vs = self.gs[tuple(self.state)] - self.ns[tuple(self.state)]
+        net_vs = self.gs[self.state] - self.ns[self.state]
         if (net_vs > 10).sum() > 0:
             net_vs[net_vs > 10] = 10
         p_values = tempered_softmax(net_vs, self.temperature)
@@ -25,10 +28,10 @@ class OpAL(BaseRL):
         return self.state, action
 
     def update(self, new_state, action, reward):
-        delta_g = reward - self.gs[tuple(new_state)][action]
-        delta_n = reward - self.ns[tuple(new_state)][action]
-        self.gs[tuple(new_state)][action] += self.lr_g * delta_g
-        self.ns[tuple(new_state)][action] += self.lr_n * -delta_n
+        delta_g = reward - self.gs[new_state][action]
+        delta_n = reward - self.ns[new_state][action]
+        self.gs[new_state][action] += self.lr_g * delta_g
+        self.ns[new_state][action] += self.lr_n * -delta_n
         self.state = new_state
 
     def get_predictions(self):

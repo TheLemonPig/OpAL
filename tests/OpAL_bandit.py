@@ -4,7 +4,7 @@ from environments.bandit_task import BanditTask
 import numpy as np
 
 ps = np.array([0.3, 0.7])
-start_ = np.zeros((1, ), dtype=np.int32)
+start_ = 0
 steps_ = 1000
 lr_ = 0.01
 temperature_ = 1.0
