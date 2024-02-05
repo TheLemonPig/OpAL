@@ -28,3 +28,6 @@ class BaseRL:
 
     def get_predictions(self):
         ...
+
+    def get_optimal_policy(self):
+        ...

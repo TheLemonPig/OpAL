@@ -14,7 +14,7 @@ class QLearning(BaseRL):
         q_shape = list(domain_shape) + [len(actions)]
         self.state = state
         # self.qs = np.ones(len(actions)) * 0.5
-        self.qs = np.ones(q_shape) * 0.
+        self.qs = np.ones(q_shape) * 0.5
 
     def act(self):
         p_values = tempered_softmax(self.qs[self.state], self.temperature)
@@ -28,5 +28,9 @@ class QLearning(BaseRL):
 
     def get_predictions(self):
         return self.qs
+
+    def get_optimal_policy(self):
+        return self.qs.argmax(axis=-1)
+
 
 
