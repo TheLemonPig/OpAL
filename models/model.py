@@ -4,9 +4,11 @@ import numpy as np
 # Basic Template for all RL models
 class BaseRL:
 
-    def __init__(self, domain, state):
+    def __init__(self, state=None, domain=None, name=None, **kwargs):
         self.state = state
         self.domain = domain
+        self.name = name
+        self.config = kwargs
     #     self.memory = [(state, None) for _ in range(memory)]
     #     self.mod_count = 0
     #

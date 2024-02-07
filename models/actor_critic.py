@@ -1,24 +1,23 @@
 import numpy as np
 
 from models.model import BaseRL
-from utils import tempered_softmax
+from utils import safe_softmax
 
 
 class ActorCritic(BaseRL):
 
-    def __init__(self, actions, domain_shape, state, alpha, beta, temperature, gamma=0):
-        BaseRL.__init__(self, domain=domain_shape, state=state)
-        self.state = state
+    def __init__(self, n_actions, alpha, beta, gamma=0, **kwargs):
+        BaseRL.__init__(self, **kwargs)
         self.alpha = alpha
         self.beta = beta
-        self.temperature = temperature
         self.gamma = gamma
-        self.vs = np.ones(domain_shape) * 0.5
-        p_shape = list(domain_shape) + [len(actions)]
+        # self.location_counter = np.zeros(domain)
+        self.vs = np.ones(self.domain) * 0.5
+        p_shape = list(self.domain) + [n_actions]
         self.ps = np.ones(p_shape) * 0.5
 
     def act(self):
-        p_values = tempered_softmax(self.ps[self.state], self.temperature)
+        p_values = safe_softmax(self.ps[self.state] * self.beta)
         action = np.random.choice(len(p_values), 1, p=p_values).item()
         return self.state, action
 

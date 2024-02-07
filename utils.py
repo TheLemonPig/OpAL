@@ -13,3 +13,12 @@ def tempered_softmax(choices, temperature):
     p_values = np.exp(choices/temperature)/np.exp(choices/temperature).sum()
     return p_values
 
+
+def location_counter(state_list, domain):
+    location_counts = np.zeros(domain)
+    x, y = domain
+    for i in range(x):
+        for j in range(y):
+            location_counts[i, j] += state_list.count((i, j))
+    return location_counts
+

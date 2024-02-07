@@ -15,11 +15,10 @@ steps_ = 10000
 alpha_ = 0.1
 beta_ = 1.0
 gamma_ = 0.9
-temperature_ = 1
 
 environment_ = GridWorld(world_array=world_array_)
-model_ = ActorCritic(actions=actions, domain_shape=world_array_.shape, state=start_, alpha=alpha_, beta=beta_,
-                     gamma=gamma_, temperature=temperature_)
+model_ = ActorCritic(n_actions=4, domain=world_array_.shape, state=start_, alpha=alpha_, beta=beta_,
+                     gamma=gamma_)
 interaction_space_ = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
 sim = Simulator(model=model_, environment=environment_, interaction_space=interaction_space_, terminals=terminals_)

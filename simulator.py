@@ -1,23 +1,22 @@
 from tqdm import tqdm
+from copy import deepcopy
 
-
-# TODO: Test how the starting value in the utility and state-action matrices affects performance - does it converge?
 
 class Simulator:
 
-    def __init__(self, model, environment, interaction_space, terminals=None, max_steps=100):
+    def __init__(self, model, environment, interaction_space, results=None, max_steps=100, **kwargs):
         self.model = model
+        self.model_cache = deepcopy(model)
         self.start_ = self.model.state
         self.environment = environment
         self.interaction_space = interaction_space
-        self.terminals = {self.model.state: 0} if terminals is None else terminals
-        self.results = {}
+        self.terminals = self.environment.terminals
+        self.results = {'States': []} if results is None else {result: None for result in results}
         self.n_steps = 0
         self.max_steps = max_steps
 
     def simulate(self, steps):
-        self.results['rewards'] = []
-        self.results['states'] = []
+        self.reset()
         for _ in tqdm(range(steps)):
             self.step()
         return self.get_results()
@@ -42,3 +41,9 @@ class Simulator:
 
     def get_predictions(self):
         return self.model.get_predictions()
+
+    def reset(self):
+        self.model = deepcopy(self.model_cache)
+        self.n_steps = 0
+        self.results['rewards'] = []
+        self.results['states'] = []

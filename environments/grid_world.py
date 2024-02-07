@@ -4,10 +4,19 @@ import numpy as np
 
 class GridWorld(BaseEnvironment):
 
-    def __init__(self, world_array, terminals=None):
-        BaseEnvironment.__init__(self)
-        self.world_array = world_array
-        self.terminals = terminals if terminals else dict()
+    def __init__(self, world_array=None, terminals=None, deterministic=True, **kwargs):
+        BaseEnvironment.__init__(self, **kwargs)
+        self.terminals = terminals
+        self.deterministic = deterministic
+        if type(world_array) == tuple:
+            self.world_array = world_array
+        else:
+            try:
+                self.world_array = np.zeros(shape=kwargs['domain']) + kwargs['non_terminal_penalty']
+                for terminal in self.terminals:
+                    self.world_array[terminal] = self.terminals[terminal]
+            except KeyError:
+                raise KeyError('Insufficient Key Word Arguments provided. Please include or provide valid world array')
 
     def interact(self, state, interaction):
         new_state = self.move(state, interaction)
