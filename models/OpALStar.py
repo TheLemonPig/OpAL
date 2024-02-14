@@ -7,9 +7,9 @@ from scipy.stats import beta as beta_dist
 
 class OpALStar(BaseRL):
 
-    def __init__(self, actions, domain_shape, state, alpha_c, alpha_g, alpha_n, beta, gamma, rho, phi, k,
-                 r_mag=1, l_mag=-1, T=100, use_qs=True):
-        BaseRL.__init__(self, domain=domain_shape, state=state)
+    def __init__(self, action_space, state_space, start_state, alpha_c, alpha_g, alpha_n, beta, gamma, rho, phi, k,
+                 r_mag=1, l_mag=-1, T=100, use_qs=True, name=None, **kwargs):
+        BaseRL.__init__(self, action_space=action_space, state_space=state_space, start_state=start_state, name=name)
         self.alpha_c = alpha_c
         self.alpha_g = alpha_g
         self.alpha_n = alpha_n
@@ -19,12 +19,10 @@ class OpALStar(BaseRL):
         self.phi = phi
         self.k = k
         self.T = T
-        actor_shape = list(domain_shape) + [len(actions)]
         self.use_qs = use_qs
-        self.state = state
-        self.qs = np.ones(actor_shape) * 0.5
-        self.gs = np.ones(actor_shape) * 1.0
-        self.ns = np.ones(actor_shape) * 1.0
+        self.qs = np.ones(state_space+action_space) * 0.5
+        self.gs = np.ones(state_space+action_space) * 1.0
+        self.ns = np.ones(state_space+action_space) * 1.0
         self.eta_c = 1
         self.gamma_c = 1
         self.anneal = 1
@@ -36,10 +34,13 @@ class OpALStar(BaseRL):
         beta_n = self.beta*np.max([0, (1-self.rho)])
         net = beta_g * self.gs[self.state] - beta_n * self.ns[self.state]
         if self.use_qs:
-            net += self.qs[self.state]  # should I add a weight that only elevates qs when gs/ns converge to zero?
+            w = 1/(1+np.exp(np.mean(net)))
+            net = self.qs[self.state]
         p_values = safe_softmax(net)
         action = np.random.choice(len(p_values), 1, p=p_values).item()
-        return self.state, action
+        return action
+
+    # TODO: Put model responsible for restarting task
 
     def update(self, new_state, action, reward):
         self.update_metacritic(reward)
@@ -54,8 +55,8 @@ class OpALStar(BaseRL):
         std = np.sqrt(var)
         S = int(mean - self.phi * std > 0.5 or mean + self.phi * std < 0.5)
         self.rho = S * (mean - 0.5) * self.k
-        self.anneal = 1/(1+1/(self.T*var))
-        # self.anneal = 1
+        # self.anneal = 1/(1+1/(self.T*var))
+        self.anneal = 1
 
     def update_critic(self, new_state, action, reward):
         delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma

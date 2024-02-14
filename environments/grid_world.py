@@ -4,29 +4,29 @@ import numpy as np
 
 class GridWorld(BaseEnvironment):
 
-    def __init__(self, world_array=None, terminals=None, deterministic=True, **kwargs):
-        BaseEnvironment.__init__(self, **kwargs)
-        self.terminals = terminals
+    def __init__(self, interactions, state_space, start_state, deterministic=True, terminal_states=None,
+                 non_terminal_loss=0, name=None, **kwargs):
+        BaseEnvironment.__init__(self, interactions=interactions, state_space=state_space,
+                                 start_state=start_state, name=name)
+        self.world_array = np.ones(state_space) * non_terminal_loss
+        self.non_terminal_loss = non_terminal_loss
+        for terminal_location in terminal_states.keys():
+            self.world_array[terminal_location] = terminal_states[terminal_location]
+        self.terminal_states = terminal_states
         self.deterministic = deterministic
-        if type(world_array) == tuple:
-            self.world_array = world_array
-        else:
-            try:
-                self.world_array = np.zeros(shape=kwargs['domain']) + kwargs['non_terminal_penalty']
-                for terminal in self.terminals:
-                    self.world_array[terminal] = self.terminals[terminal]
-            except KeyError:
-                raise KeyError('Insufficient Key Word Arguments provided. Please include or provide valid world array')
 
-    def interact(self, state, interaction):
-        new_state = self.move(state, interaction)
-        if not self.in_bounds(new_state):
-            new_state = state
+    def interact(self, action):
+        interaction = self.interactions[action]
+        new_state = self.translate(self.model_state, interaction)
+        if self.in_bounds(new_state):
+            self.model_state = new_state
+        else:
+            new_state = self.model_state
         reward = self.sample(new_state)
         return new_state, reward
 
     def sample(self, new_state):
-        if new_state in self.terminals.keys():
+        if self.at_terminal() and not self.deterministic:
             # grid world value modeled as bandit probability
             p = abs(self.world_array[new_state])
             sign = self.world_array[new_state]/abs(self.world_array[new_state])
@@ -37,7 +37,7 @@ class GridWorld(BaseEnvironment):
         return reward
 
     @staticmethod
-    def move(state, interaction):
+    def translate(state, interaction):
         return state[0] + interaction[0], state[1] + interaction[1]
 
     def in_bounds(self, new_state):
@@ -45,3 +45,9 @@ class GridWorld(BaseEnvironment):
             if new_state[i] < 0 or new_state[i] >= self.world_array.shape[i]:
                 return False
         return True
+
+    def at_terminal(self):
+        if self.terminal_states and self.model_state in self.terminal_states:
+            return True
+        else:
+            return False

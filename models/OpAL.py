@@ -12,20 +12,18 @@ from utils import safe_softmax
 
 class OpAL(BaseRL):
 
-    def __init__(self, actions, domain_shape, state, alpha_c, alpha_g, alpha_n, beta, gamma, rho=0, use_state=True):
-        BaseRL.__init__(self, domain=domain_shape, state=state)
+    def __init__(self, action_space, state_space, start_state, alpha_c, alpha_g, alpha_n, beta, gamma, rho=0, name=None,
+                 **kwargs):
+        BaseRL.__init__(self, action_space=action_space, state_space=state_space, start_state=start_state, name=name)
         self.alpha_c = alpha_c
         self.alpha_g = alpha_g
         self.alpha_n = alpha_n
         self.beta = beta
         self.gamma = gamma
         self.rho = rho
-        actor_shape = list(domain_shape) + [len(actions)]
-        self.use_state = use_state
-        self.state = state
-        self.qs = np.ones(actor_shape) * 0.5
-        self.gs = np.ones(actor_shape) * 1.0
-        self.ns = np.ones(actor_shape) * 1.0
+        self.qs = np.ones(state_space+action_space) * 0.5
+        self.gs = np.ones(state_space+action_space) * 1.0
+        self.ns = np.ones(state_space+action_space) * 1.0
 
     def act(self):
         beta_g = self.beta * (1+self.rho)
@@ -33,7 +31,9 @@ class OpAL(BaseRL):
         net = beta_g * self.gs[self.state] - beta_n * self.ns[self.state]
         p_values = safe_softmax(net)
         action = np.random.choice(len(p_values), 1, p=p_values).item()
-        return self.state, action
+        return action
+
+    # TODO: Put model responsible for restarting task
 
     def update(self, new_state, action, reward):
         delta = self.update_critic(new_state, action, reward)
@@ -49,7 +49,7 @@ class OpAL(BaseRL):
         self.gs[self.state][action] += self.alpha_g * delta * self.gs[self.state][action]
         self.ns[self.state][action] += self.alpha_n * -delta * self.ns[self.state][action]
 
-    def get_predictions(self):
+    def get_weights(self):
         return {"qs": self.qs, "gs": self.gs, "ns": self.ns}
 
     def get_optimal_policy(self):
