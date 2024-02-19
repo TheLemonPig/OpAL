@@ -8,7 +8,7 @@ from scipy.stats import beta as beta_dist
 class OpALStar(BaseRL):
 
     def __init__(self, action_space, state_space, start_state, alpha_c, alpha_g, alpha_n, beta, gamma, rho, phi, k,
-                 r_mag=1, l_mag=-1, T=100, use_qs=True, name=None, **kwargs):
+                 r_mag=1, l_mag=-1, T=100, anneal_method=None, name=None, **kwargs):
         BaseRL.__init__(self, action_space=action_space, state_space=state_space, start_state=start_state, name=name)
         self.alpha_c = alpha_c
         self.alpha_g = alpha_g
@@ -19,7 +19,8 @@ class OpALStar(BaseRL):
         self.phi = phi
         self.k = k
         self.T = T
-        self.use_qs = use_qs
+        self.anneal_method = anneal_method
+        self.visitation_counter = np.zeros(state_space+action_space)
         self.qs = np.ones(state_space+action_space) * 0.5
         self.gs = np.ones(state_space+action_space) * 1.0
         self.ns = np.ones(state_space+action_space) * 1.0
@@ -28,16 +29,19 @@ class OpALStar(BaseRL):
         self.anneal = 1
         self.r_mag = r_mag
         self.l_mag = l_mag
+        self.action = None
 
     def act(self):
+        self.visitation_counter[self.state] += 1
         beta_g = self.beta*np.max([0, (1+self.rho)])
         beta_n = self.beta*np.max([0, (1-self.rho)])
         net = beta_g * self.gs[self.state] - beta_n * self.ns[self.state]
-        if self.use_qs:
-            w = 1/(1+np.exp(np.mean(net)))
-            net = self.qs[self.state]
+        if self.anneal_method == 'qs':
+            w = 1/(1+np.mean(abs(net)))
+            net = net * (1-w) + self.qs[self.state] * w
         p_values = safe_softmax(net)
         action = np.random.choice(len(p_values), 1, p=p_values).item()
+        self.action = action
         return action
 
     # TODO: Put model responsible for restarting task
@@ -55,8 +59,12 @@ class OpALStar(BaseRL):
         std = np.sqrt(var)
         S = int(mean - self.phi * std > 0.5 or mean + self.phi * std < 0.5)
         self.rho = S * (mean - 0.5) * self.k
-        # self.anneal = 1/(1+1/(self.T*var))
-        self.anneal = 1
+        if self.anneal_method == 'variance':
+            self.anneal = 1/(1+1/(self.T*var))
+        elif self.anneal_method == 'visitation':
+            self.anneal = 1/(self.visitation_counter[self.state][self.action])
+        else:
+            self.anneal = 1
 
     def update_critic(self, new_state, action, reward):
         delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
@@ -76,4 +84,5 @@ class OpALStar(BaseRL):
         return {"qs": self.qs, "gs": self.gs, "ns": self.ns}
 
     def get_optimal_policy(self):
+        # This is out of date
         return (self.gs - self.ns).argmax(axis=-1)

@@ -17,6 +17,9 @@ def state_heatmap(simulator, results, n_reps, average=True, **kwargs):
                         location_counts += location_counter(state_list, domain) / (n_reps * n_attempts)
                     plt.title(f'Average visitations per trial by {mod_dic["name"]}')
                     plt.imshow(location_counts, cmap='viridis', interpolation='nearest')
+                    for i in range(location_counts.shape[0]):
+                        for j in range(location_counts.shape[1]):
+                            plt.text(j, i, f'{location_counts[i, j]:.2f}', ha='center', va='center', color='w')
                     plt.colorbar()
                     plt.show()
                 else:
@@ -52,14 +55,47 @@ def state_heatmap(simulator, results, n_reps, average=True, **kwargs):
                         for n in range(n_reps):
                             action_list = results[env_dic['name']][mod_dic['name']][n]['actions']
                             action_counts += action_counter(action_list, action_space)
-                        average_counts = (action_counts / action_counts.sum()).reshape((1,-1))
+                        average_counts = (action_counts / action_counts.sum()).reshape((1, -1))
                         plt.title(f'Average actions per trial by {mod_dic["name"]}')
                         plt.imshow(average_counts, cmap='viridis', interpolation='nearest')
+                        for j in range(average_counts.shape[1]):
+                            plt.text(j, 0, f'{average_counts[0,j]:.2f}', ha='center', va='center', color='w')
                         plt.colorbar()
                         plt.show()
 
 
+def plot_trends(simulator, results, n_reps, **kwargs):
+    if kwargs['cumulative']:
+        for env_dic in simulator.environments:
+            for mod_dic in simulator.models:
+                avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['cumulative']),))
+                for n in range(n_reps):
+                    avg_cum += results[env_dic['name']][mod_dic['name']][n]['cumulative']
+                avg_cum = avg_cum / n_reps
+                plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']} in {env_dic['name']}")
+        plt.legend()
+        plt.show()
+    if kwargs['rolling']:
+        roll = 100
+        for env_dic in simulator.environments:
+            for mod_dic in simulator.models:
+                avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['rolling']),))
+                for n in range(n_reps):
+                    avg_cum += results[env_dic['name']][mod_dic['name']][n]['rolling']
+                avg_cum = avg_cum / n_reps
+                plt.plot(np.arange(len(avg_cum[roll:])), avg_cum[roll:], label=f"{mod_dic['name']} in {env_dic['name']}")
+        plt.legend()
+        plt.show()
+
+
+
+# def learning_rates(simulator, results, n_reps, average=True, **kwargs):
+#     for env_dic in simulator.environments:
+#         if env_dic['name'] == 'GridWorld':
+#             for mod_dic in simulator.models:
+#                 if average:
+
 
 
 if __name__ == "__main__":
-    example()
+    ...

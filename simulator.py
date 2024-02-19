@@ -1,5 +1,6 @@
 from tqdm import tqdm
 from copy import deepcopy
+import numpy as np
 
 from models import model_library
 from environments import environment_library
@@ -14,14 +15,18 @@ class Simulator:
                         {model['name']: [] for model in models}
                         for env in environments}
 
-    def run(self, reps, steps):
+    def run(self, reps, steps, seed=None):
         for env_params in self.environments:
-            environment = environment_library[env_params['name']](**env_params)
+            environment = environment_library[env_params['model']](**env_params)
             for model_params in self.models:
-                model = model_library[model_params['name']](**model_params, state_space=env_params['state_space'],
+                model = model_library[model_params['model']](**model_params, state_space=env_params['state_space'],
                                                             action_space=environment.interaction_space,
                                                             start_state=env_params['start_state'])
-                for _ in tqdm(range(reps)):
+                for n in tqdm(range(reps)):
+                    if hasattr(seed, "__getitem__"):
+                        np.random.seed(seed[n])
+                    else:
+                        np.random.seed(seed)
                     res = self.simulate(steps, deepcopy(model), deepcopy(environment))
                     self.results[env_params['name']][model_params['name']].append(res)
         return self.results
@@ -32,13 +37,18 @@ class Simulator:
         results['actions'] = []
         results['rewards'] = []
         results['attempts'] = []
-        for _ in tqdm(range(steps)):
+        results['cumulative'] = []
+        results['rolling'] = []
+        for n in tqdm(range(steps)):
             action = model.act()
             new_state, reward = environment.interact(action)
             model.update(new_state, action, reward)
             results['states'].append(new_state)
             results['actions'].append(action)
             results['rewards'].append(reward)
+            results['cumulative'].append(sum(results['rewards']))
+            roll = 100
+            results['rolling'].append(sum(results['rewards'][max(n-roll, 0):n])/(min(roll, n)+1))
             if environment.at_terminal():
                 environment.restart()
                 model.restart()

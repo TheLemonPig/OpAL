@@ -4,7 +4,7 @@ import numpy as np
 # Basic Template for all RL models
 class BaseRL:
 
-    def __init__(self, action_space, state_space, start_state, name=None, **kwargs):
+    def __init__(self, action_space, state_space, start_state, name=None):
         self.action_space = action_space
         self.state_space = state_space
         self.name = "NamelessModel" if name is None else name
