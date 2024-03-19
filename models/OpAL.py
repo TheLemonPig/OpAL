@@ -55,4 +55,16 @@ class OpAL(BaseRL):
     def get_optimal_policy(self):
         return (self.gs - self.ns).argmax(axis=-1)
 
+    def reinitialize_weights(self):
+        self.qs = np.ones_like(self.qs) * 0.5
+        self.gs = np.ones_like(self.gs)
+        self.ns = np.ones_like(self.ns)
+
+    def get_probabilities(self):
+        beta_g = self.beta * np.max([0, (1 + self.rho)])
+        beta_n = self.beta * np.max([0, (1 - self.rho)])
+        net = beta_g * self.gs - beta_n * self.ns
+        p_values = safe_softmax(net)
+        return p_values
+
 

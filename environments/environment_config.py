@@ -8,7 +8,7 @@ bandit_task_ = {
     "deterministic": False,
     "ps": [0.2, 0.3, 0.1, 0.2],
     "success_actions": [1],
-    "interactions": [0, 1]
+    "interactions": [0, 1, 2, 3]
 }
 
 grid_world_ = {
@@ -17,7 +17,7 @@ grid_world_ = {
     "state_space": (3, 4),
     "start_state": (1, 0),
     "non_terminal_penalty": -0.0,
-    "terminal_states": {(2, 3): 0.8, (0, 3): 0.7},
+    "terminal_states": {(2, 3): 0.2, (0, 3): 0.3},
     "deterministic": True,
     "success_terminals": [(2, 3)],
     "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)]

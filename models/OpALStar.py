@@ -37,7 +37,8 @@ class OpALStar(BaseRL):
         beta_n = self.beta*np.max([0, (1-self.rho)])
         net = beta_g * self.gs[self.state] - beta_n * self.ns[self.state]
         if self.anneal_method == 'qs':
-            w = 1/(1+np.mean(abs(net)))
+            w = 1/(1+10*abs(np.mean(self.gs[self.state])*0+np.mean(self.ns[self.state])))
+            print(w)
             net = net * (1-w) + self.qs[self.state] * w
         p_values = safe_softmax(net)
         action = np.random.choice(len(p_values), 1, p=p_values).item()
@@ -80,9 +81,24 @@ class OpALStar(BaseRL):
     def f(self, delta):
         return delta/(self.r_mag-self.l_mag)
 
-    def get_predictions(self):
+    def get_weights(self):
         return {"qs": self.qs, "gs": self.gs, "ns": self.ns}
+
+    def get_probabilities(self):
+        beta_g = self.beta * np.max([0, (1 + self.rho)])
+        beta_n = self.beta * np.max([0, (1 - self.rho)])
+        net = beta_g * self.gs - beta_n * self.ns
+        if self.anneal_method == 'qs':
+            w = 1 / (1 + np.mean(abs(net)))
+            net = net * (1 - w) + self.qs[self.state] * w
+        p_values = safe_softmax(net)
+        return p_values
 
     def get_optimal_policy(self):
         # This is out of date
         return (self.gs - self.ns).argmax(axis=-1)
+
+    def reinitialize_weights(self):
+        self.qs = np.ones_like(self.qs) * 0.5
+        self.gs = np.ones_like(self.gs)
+        self.ns = np.ones_like(self.ns)

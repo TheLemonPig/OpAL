@@ -10,32 +10,27 @@ class BaseRL:
         self.name = "NamelessModel" if name is None else name
         self.start_state = start_state
         self.state = start_state
-    #     self.memory = [(state, None) for _ in range(memory)]
-    #     self.mod_count = 0
-    #
-    # def store(self, state, action):
-    #     self.memory[self.mod_count] = (state, action)
-    #     self.mod_count = (self.mod_count + 1) % len(self.memory)
-    #
-    # def retrieve(self, t_n):
-    #     return self.memory[self.mod_count - t_minus_n]
-    # for t in range(self.memory):
-    #     state_t, action_t = self.retrieve(t)
-    #     self.qs[state_t][action_t] += self.lr * self.gamma * self.qs[new_state][action]
 
     def act(self):
-        ...
+        raise NotImplementedError
 
     # TODO: Put model responsible for restarting task
 
     def update(self, *args):
-        ...
+        raise NotImplementedError
 
     def get_weights(self):
-        ...
+        raise NotImplementedError
 
     def get_optimal_policy(self):
-        ...
+        raise NotImplementedError
 
     def restart(self):
         self.state = self.start_state
+        self.reinitialize_weights()
+
+    def reinitialize_weights(self):
+        raise NotImplementedError(f'{self.name}')
+
+    def get_probabilities(self):
+        raise NotImplementedError(f'{self.name}')

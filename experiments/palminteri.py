@@ -1,3 +1,5 @@
+# Config file to initialize Palminteri experiment
+
 from environments.environment_config import *
 from models.model_config import *
 
@@ -8,11 +10,11 @@ environments = [
 
 models = [
     actor_critic_,
-    #opal_,
+    opal_,
     opal_star_,
     opal_star_qs_,
     opal_star_var_,
-    #q_learning_
+    q_learning_
 ]
 
 config_ = {
@@ -25,26 +27,23 @@ config_ = {
     },
     "plot_params": {
         'state_heatmap': {
-            'average': False
+            'average': True
         },
         'learning_rates': {
-            'average': False
+            'average': True
         },
         'trends': {
-            'cumulative': False,
-            'rolling': False,
-            'weights': True,
-            'probabilities': True,
+            'cumulative': True,
+            'rolling': True,
+            'weights': True
         }
     },
-    "epochs": 250,
-    "n_reps": 20,
+    "epochs": 50000,
+    "n_reps": 1,
     "environment_params": environments,
     "model_params": models,
-    "seed": range(20),
+    "seed": range(10),
     "grid_search": False,
     "grid_params": {'beta': (0.1, 2.1, 0.1),
-                    'gamma': (0.1, 0.2, 0.1)},
-    "compare": False,
-    "compare_param": ('beta', 0.1, 0.5, 0.1)
+                    'gamma': (0.1, 0.2, 0.1)}
 }
