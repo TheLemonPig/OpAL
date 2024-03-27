@@ -23,15 +23,15 @@ def grid_search(config, hyperparams):
     param_permutations = list(product(*lists_of_hyperparams.values()))
     n_combinations = len(param_permutations)
     assert n_combinations < 10e3, RuntimeError(f"Search space is impractically large: {n_combinations} combinations")
-    scores = np.zeros((n_combinations, len(hyperparams)+1))
+    scores = np.zeros((n_combinations, len(hyperparams)+1, len(simulator.models)))
     for idx, params in enumerate(param_permutations):
         simulator.update_model_parameters({k: params[idx] for idx, k in enumerate(hyperparams.keys())})
         results = simulator.run(reps=config['n_reps'], steps=config['epochs'], seed=config['seed'])
         score = success_metrics(simulator, results, config['n_reps'], **config['verbose_params']['success_metrics'])
         for jdx, param in enumerate(params):
             scores[idx, jdx] = param
-        scores[idx, -1] = score
-    top_results = scores[np.argsort(scores[:, -1])[::-1]]
+        scores[idx, -1] = np.array(score)
+    top_results = scores[np.argsort(scores[:, -1, -1])[::-1]]
     head = min(10, n_combinations)
     leaderboard = [{k: top_results[idx, jdx] for jdx, k in enumerate(hyperparams.keys())} for idx in range(head)]
     print('\n--- Top Hyperparameter Settings ---\n')

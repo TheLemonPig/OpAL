@@ -38,7 +38,7 @@ class OpALStar(BaseRL):
         net = beta_g * self.gs[self.state] - beta_n * self.ns[self.state]
         if self.anneal_method == 'qs':
             w = 1/(1+10*abs(np.mean(self.gs[self.state])*0+np.mean(self.ns[self.state])))
-            print(w)
+            # print(w)
             net = net * (1-w) + self.qs[self.state] * w
         p_values = safe_softmax(net)
         action = np.random.choice(len(p_values), 1, p=p_values).item()

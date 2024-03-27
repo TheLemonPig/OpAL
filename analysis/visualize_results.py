@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from itertools import product
 
-from utils import location_counter, action_counter
+from utils import location_counter, state_action_counter
 
 
 def state_heatmap(simulator, results, n_reps, average=True, compare=False, **kwargs):
@@ -31,7 +31,7 @@ def state_heatmap(simulator, results, n_reps, average=True, compare=False, **kwa
                         location_counts = np.zeros((x, y, n_reps))
                         for n in range(n_reps):
                             state_list = results[env_dic['name']][mod_dic['name']][n]['states']
-                            location_counts[n] = location_counter(state_list, domain)
+                            location_counts[n] += location_counter(state_list, domain)
                         n_rows = int(np.sqrt(n_reps))
                         n_cols = int(np.ceil(n_reps / n_rows))
                         fig, axs = plt.subplots(n_rows, n_cols, figsize=(6, 8))

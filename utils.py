@@ -23,12 +23,13 @@ def location_counter(state_list, domain):
     return location_counts
 
 
-def action_counter(action_list, action_space):
-    action_counts = np.zeros(action_space)
-    (x, ) = action_space
-    for i in range(x):
-        action_counts[i] += action_list.count(i)
+def state_action_counter(state_action_list, state_action_space):
+    action_counts = np.zeros(state_action_space)
+    for i in range(state_action_space[0]):
+        for j in range(state_action_space[1]):
+            action_counts[i, j] += state_action_list.count((i, j))
     return action_counts
+
 
 def cumulative_reward(rewards):
     cumulative = []

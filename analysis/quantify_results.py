@@ -1,6 +1,6 @@
 import numpy as np
-
-from utils import location_counter, action_counter
+from itertools import product
+from utils import location_counter, state_action_counter
 
 
 def success_metrics(simulator, results, n_reps, average=True, compare=None, **kwargs):
@@ -33,21 +33,22 @@ def success_metrics(simulator, results, n_reps, average=True, compare=None, **kw
             elif env_dic['name'] == 'BanditTask':
                 success_results = []
                 for mod_dic in simulator.models:
-                    success_actions = env_dic['success_actions']
-                    action_space = (len(env_dic['interactions']),)
-                    (n_actions, ) = action_space
+                    success_state_actions = env_dic['success_state_actions']
+                    state_action_space = np.array(env_dic['ps']).shape
                     if average:
-                        action_counts = np.zeros(action_space)
+                        state_action_counts = np.zeros(state_action_space)
                         for n in range(n_reps):
+                            state_list = results[env_dic['name']][mod_dic['name']][n]['states']
                             action_list = results[env_dic['name']][mod_dic['name']][n]['actions']
-                            action_counts += action_counter(action_list, action_space)
+                            state_action_list = [(state[0], action) for (state, action) in zip(state_list, action_list)]
+                            state_action_counts += state_action_counter(state_action_list, state_action_space)
                         n_success = 0
                         n_failures = 0
-                        for action in range(n_actions):
-                            if action in success_actions:
-                                n_success += action_counts[action]
+                        for state_x, state_y, action in product(*[range(i) for i in state_action_space]):
+                            if (state_x, state_y, action) in success_state_actions:
+                                n_success += state_action_counts[state_x, state_y][action]
                             else:
-                                n_failures += action_counts[action]
+                                n_failures += state_action_counts[state_x, state_y][action]
                         n_attempts = n_success + n_failures
                         print(f'{mod_dic["name"]} success rate: {np.round(n_success / n_attempts * 100, 2)}%')
                         success_results.append(np.round(n_success / n_attempts * 100, 2))

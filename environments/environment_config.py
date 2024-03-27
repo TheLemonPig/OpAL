@@ -3,12 +3,17 @@
 bandit_task_ = {
     "name": 'BanditTask',
     "model": 'BanditTask',
-    "state_space": (1,),
-    "start_state": (0,),
+    # "state_space": (2,),
+    "state_space": (1, 1),
+    "start_state": (0, 0),
     "deterministic": False,
-    "ps": [0.2, 0.3, 0.1, 0.2],
-    "success_actions": [1],
+    "ps": [[[0.2, 0.3, 0.1, 0.2]]],
+    "success_state_actions": [(0, 0, 1)],
     "interactions": [0, 1, 2, 3]
+    #"ps": [[0.99, 0.01], [0.01, 0.99]],
+    #"rewards": [[1, 1], [1, 1]],
+    #"success_state_actions": [(0, 0), (0, 1)],
+    #"interactions": [0, 1]
 }
 
 grid_world_ = {

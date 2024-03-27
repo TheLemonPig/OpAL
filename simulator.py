@@ -83,8 +83,8 @@ class Simulator:
                     break
             elif 'model' in param_dict.keys() or 'name' in param_dict.keys():
                 raise UserWarning('Model dictionaries supplied to simulator lack name/model specifiers')
-            for param in param_dict:
-                if param not in model_params:
-                    raise UserWarning('New parameters are being added to model dictionaries')
+            # for param in param_dict:
+            #     if param not in model_params:
+            #         raise UserWarning('New parameters are being added to model dictionaries')
             model_params.update(param_dict)
 

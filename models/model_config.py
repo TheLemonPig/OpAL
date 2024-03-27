@@ -5,7 +5,7 @@ actor_critic_ = {
     "model": 'ActorCritic',
     "alpha": 0.1,
     "beta": 1.0,
-    "gamma": 0.9,
+    "gamma": 0.0,
 }
 
 opal_ = {
@@ -15,7 +15,7 @@ opal_ = {
     "alpha_n": 0.7,
     "alpha_c": 0.7,
     "beta": 1.0,
-    "gamma": 0.9,
+    "gamma": 0.0,
     "rho": 0
 }
 
@@ -26,7 +26,7 @@ opal_star_ = {
     "alpha_n": 0.7,
     "alpha_c": 0.6,
     "beta": 1.0,
-    "gamma": 0.9,
+    "gamma": 0.0,
     "rho": 0,
     "phi": 1.5,
     "k": 20.0,
@@ -43,7 +43,7 @@ opal_star_qs_ = {
     "alpha_n": 0.7,
     "alpha_c": 0.6,
     "beta": 1.0,
-    "gamma": 0.9,
+    "gamma": 0.0,
     "rho": 0,
     "phi": 1.5,
     "k": 20.0,
@@ -60,7 +60,7 @@ opal_star_var_ = {
     "alpha_n": 0.7,
     "alpha_c": 0.6,
     "beta": 1.0,
-    "gamma": 0.9,
+    "gamma": 0.0,
     "rho": 0,
     "phi": 1.5,
     "k": 20.0,
@@ -75,5 +75,5 @@ q_learning_ = {
     "model": 'QLearning',
     "alpha": 0.1,
     "beta": 1.0,
-    "gamma": 0.9,
+    "gamma": 0.0,
 }
