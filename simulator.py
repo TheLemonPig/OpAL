@@ -39,7 +39,10 @@ class Simulator:
         results['attempts'] = []
         results['cumulative'] = []
         results['rolling'] = []
+        n_steps = 0
         for n in tqdm(range(steps)):
+            if n % 50 == 0:
+                x = 0
             action = model.act()
             new_state, reward = environment.interact(action)
             model.update(new_state, action, reward)
@@ -49,12 +52,15 @@ class Simulator:
             results['cumulative'].append(sum(results['rewards']))
             roll = 100
             results['rolling'].append(sum(results['rewards'][max(n-roll, 0):n])/(min(roll, n)+1))
-            if environment.at_terminal():
+            if environment.at_terminal() or environment.time_up(n_steps):
                 environment.restart()
                 model.restart()
+                n_steps = 0
                 results['attempts'].append(1)
             else:
+                n_steps += 1
                 results['attempts'].append(0)
+
         environment.restart()
         model.restart()
         return results

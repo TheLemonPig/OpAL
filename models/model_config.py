@@ -11,10 +11,10 @@ actor_critic_ = {
 opal_ = {
     "name": 'OpAL',
     "model": 'OpAL',
-    "alpha_g": 0.1,
-    "alpha_n": 0.1,
-    "alpha_c": 0.1,
-    "beta": 1.0,
+    "alpha_g": 0.5,
+    "alpha_n": 0.5,
+    "alpha_c": 0.4,
+    "beta": 10.0,
     "gamma": 0.9,
     "rho": 0
 }
@@ -22,10 +22,10 @@ opal_ = {
 opal_star_ = {
     "name": 'OpALStar',
     "model": 'OpALStar',
-    "alpha_g": 0.1,
-    "alpha_n": 0.1,
-    "alpha_c": 0.1,
-    "beta": 1.0,
+    "alpha_g": 0.5,
+    "alpha_n": 0.5,
+    "alpha_c": 0.4,
+    "beta": 5.0,
     "gamma": 0.9,
     "rho": 0,
     "phi": 1.0,
@@ -73,7 +73,7 @@ opal_star_var_ = {
 q_learning_ = {
     "name": 'QLearning',
     "model": 'QLearning',
-    "alpha": 0.1,
+    "alpha": 0.2,
     "beta": 1.0,
     "gamma": 0.9,
 }

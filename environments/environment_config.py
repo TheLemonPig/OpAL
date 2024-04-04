@@ -17,7 +17,7 @@ grid_world_ = {
     "state_space": (3, 4),
     "start_state": (1, 0),
     "non_terminal_penalty": -0.0,
-    "terminal_states": {(2, 3): 0.8, (0, 3): 0.7},
+    "terminal_states": {(2, 3): 0.8, (0, 3): 0.2},
     "deterministic": True,
     "success_terminals": [(2, 3)],
     "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)]

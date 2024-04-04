@@ -2,15 +2,15 @@ from environments.environment_config import *
 from models.model_config import *
 
 environments = [
-    bandit_task_,
-    # grid_world_
+    # bandit_task_,
+    grid_world_
 ]
 
 models = [
-    actor_critic_,
+    # actor_critic_,
     # opal_,
     opal_star_,
-    opal_star_qs_,
+    # opal_star_qs_,
     opal_star_var_,
     # q_learning_
 ]
@@ -35,8 +35,8 @@ config_ = {
             'rolling': True
         }
     },
-    "epochs": 10000,
-    "n_reps": 10,
+    "epochs": 1000,
+    "n_reps": 5,
     "environment_params": environments,
     "model_params": models,
     "seed": range(10)

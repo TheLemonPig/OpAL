@@ -67,8 +67,18 @@ class OpALStar(BaseRL):
             self.anneal = 1
 
     def update_critic(self, new_state, action, reward):
+        # # States
+        # delta = reward - self.qs[self.state][0] + self.qs[new_state][0] * self.gamma
+        # self.qs[self.state][0] += self.alpha_c * delta
+        # State-actions
         delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
-        self.qs[self.state] += self.alpha_c * delta
+        self.qs[self.state][action] += self.alpha_c * delta
+        # # Actions
+        # delta = reward - self.qs[(0, 0)][action] + self.qs[(0, 0)].max() * self.gamma
+        # self.qs[(0, 0)][action] += self.alpha_c * delta
+        # # Mix-up
+        # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
+        # self.qs[self.state] += self.alpha_c * delta
         return delta
 
     def update_actor(self, action, delta):
@@ -80,7 +90,7 @@ class OpALStar(BaseRL):
     def f(self, delta):
         return delta/(self.r_mag-self.l_mag)
 
-    def get_predictions(self):
+    def get_weights(self):
         return {"qs": self.qs, "gs": self.gs, "ns": self.ns}
 
     def get_optimal_policy(self):

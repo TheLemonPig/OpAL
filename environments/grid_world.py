@@ -5,7 +5,7 @@ import numpy as np
 class GridWorld(BaseEnvironment):
 
     def __init__(self, interactions, state_space, start_state, deterministic=True, terminal_states=None,
-                 non_terminal_loss=0, name=None, **kwargs):
+                 non_terminal_loss=0, name=None, max_steps=300, **kwargs):
         BaseEnvironment.__init__(self, interactions=interactions, state_space=state_space,
                                  start_state=start_state, name=name)
         self.world_array = np.ones(state_space) * non_terminal_loss
@@ -14,6 +14,7 @@ class GridWorld(BaseEnvironment):
             self.world_array[terminal_location] = terminal_states[terminal_location]
         self.terminal_states = terminal_states
         self.deterministic = deterministic
+        self.max_steps = max_steps
 
     def interact(self, action):
         interaction = self.interactions[action]
@@ -51,3 +52,7 @@ class GridWorld(BaseEnvironment):
             return True
         else:
             return False
+
+    def time_up(self, epochs):
+        return epochs > self.max_steps
+
