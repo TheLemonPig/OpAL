@@ -41,8 +41,18 @@ class OpAL(BaseRL):
         self.state = new_state
 
     def update_critic(self, new_state, action, reward):
-        delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
-        self.qs[self.state][action] += self.alpha_c * delta
+        # States
+        delta = reward - self.qs[self.state][0] + self.qs[new_state][0] * self.gamma
+        self.qs[self.state][0] += self.alpha_c * delta
+        # # State-actions
+        # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
+        # self.qs[self.state][action] += self.alpha_c * delta
+        # # Actions
+        # delta = reward - self.qs[(0, 0)][action] + self.qs[(0, 0)].max() * self.gamma
+        # self.qs[(0, 0)][action] += self.alpha_c * delta
+        # # Mix-up
+        # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
+        # self.qs[self.state] += self.alpha_c * delta
         return delta
 
     def update_actor(self, action, delta):

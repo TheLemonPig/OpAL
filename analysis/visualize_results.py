@@ -85,6 +85,7 @@ def plot_trends(simulator, results, n_reps, **kwargs):
                 avg_cum = avg_cum / n_reps
                 plt.plot(np.arange(len(avg_cum[roll:])), avg_cum[roll:], label=f"{mod_dic['name']} in {env_dic['name']}")
         plt.legend()
+        plt.title('Rolling Average Reward')
         plt.show()
 
 

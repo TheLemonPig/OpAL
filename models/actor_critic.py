@@ -32,7 +32,7 @@ class ActorCritic(BaseRL):
         return delta
 
     def update_actor(self, action, delta):
-        self.ps[self.state][action] += self.beta * delta
+        self.ps[self.state][action] += delta
 
     def get_weights(self):
         return {"ps": self.ps, "vs": self.vs}

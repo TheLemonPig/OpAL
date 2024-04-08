@@ -24,6 +24,7 @@ def success_metrics(simulator, results, n_reps, average=True, **kwargs):
                             n_failures += location_counts[terminal]
                     n_attempts = n_success + n_failures
                     print(f'{mod_dic["name"]} success rate: {np.round(n_success/n_attempts*100, 2)}%')
+                    success_rate = np.round(n_success/n_attempts*100, 2)
         elif env_dic['name'] == 'BanditTask':
             for mod_dic in simulator.models:
                 success_actions = env_dic['success_actions']
@@ -43,5 +44,7 @@ def success_metrics(simulator, results, n_reps, average=True, **kwargs):
                             n_failures += action_counts[action]
                     n_attempts = n_success + n_failures
                     print(f'{mod_dic["name"]} success rate: {np.round(n_success / n_attempts * 100, 2)}%')
+                    success_rate = np.round(n_success / n_attempts * 100, 2)
+    return success_rate
 
 

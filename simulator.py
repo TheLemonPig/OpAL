@@ -22,7 +22,8 @@ class Simulator:
                 model = model_library[model_params['model']](**model_params, state_space=env_params['state_space'],
                                                             action_space=environment.interaction_space,
                                                             start_state=env_params['start_state'])
-                for n in tqdm(range(reps)):
+                # for n in tqdm(range(reps)):
+                for n in tqdm(range(reps), desc=f'Training {model.name} in {environment.name}'):
                     if hasattr(seed, "__getitem__"):
                         np.random.seed(seed[n])
                     else:
@@ -40,7 +41,8 @@ class Simulator:
         results['cumulative'] = []
         results['rolling'] = []
         n_steps = 0
-        for n in tqdm(range(steps)):
+        # for n in tqdm(range(steps)):
+        for n in range(steps):
             if n % 50 == 0:
                 x = 0
             action = model.act()
@@ -50,7 +52,7 @@ class Simulator:
             results['actions'].append(action)
             results['rewards'].append(reward)
             results['cumulative'].append(sum(results['rewards']))
-            roll = 100
+            roll = steps // 10
             results['rolling'].append(sum(results['rewards'][max(n-roll, 0):n])/(min(roll, n)+1))
             if environment.at_terminal() or environment.time_up(n_steps):
                 environment.restart()

@@ -7,12 +7,12 @@ environments = [
 ]
 
 models = [
-    # actor_critic_,
-    # opal_,
+    actor_critic_,
+    opal_,
     opal_star_,
     # opal_star_qs_,
-    opal_star_var_,
-    # q_learning_
+    # opal_star_var_,
+    q_learning_
 ]
 
 config_ = {
@@ -35,9 +35,9 @@ config_ = {
             'rolling': True
         }
     },
-    "epochs": 1000,
-    "n_reps": 5,
+    "epochs": 10000,
+    "n_reps": 120,
     "environment_params": environments,
     "model_params": models,
-    "seed": range(10)
+    "seed": range(200)
 }
