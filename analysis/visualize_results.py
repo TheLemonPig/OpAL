@@ -16,10 +16,16 @@ def state_heatmap(simulator, results, n_reps, average=True, **kwargs):
                         n_attempts = sum(results[env_dic['name']][mod_dic['name']][n]['attempts'])
                         location_counts += location_counter(state_list, domain) / (n_reps * n_attempts)
                     plt.title(f'Average visitations per trial by {mod_dic["name"]}')
-                    plt.imshow(location_counts, cmap='viridis', interpolation='nearest')
                     for i in range(location_counts.shape[0]):
                         for j in range(location_counts.shape[1]):
                             plt.text(j, i, f'{location_counts[i, j]:.2f}', ha='center', va='center', color='w')
+                    for loc in env_dic['terminal_states']:
+                        if loc in env_dic['success_terminals']:
+                            circle = plt.Circle((loc[1], loc[0]), 0.5, color='green', fill=False)
+                        else:
+                            circle = plt.Circle((loc[1], loc[0]), 0.5, color='red', fill=False)
+                        plt.gca().add_patch(circle)
+                    plt.imshow(location_counts, cmap='viridis', interpolation='nearest')
                     plt.colorbar()
                     plt.show()
                 else:

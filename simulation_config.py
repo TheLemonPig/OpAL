@@ -7,9 +7,9 @@ environments = [
 ]
 
 models = [
-    actor_critic_,
-    opal_,
-    opal_star_,
+    # actor_critic_,
+    # opal_,
+    # opal_star_,
     # opal_star_qs_,
     # opal_star_var_,
     q_learning_
@@ -36,7 +36,7 @@ config_ = {
         }
     },
     "epochs": 10000,
-    "n_reps": 120,
+    "n_reps": 20,
     "environment_params": environments,
     "model_params": models,
     "seed": range(200)

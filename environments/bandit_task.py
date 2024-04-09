@@ -20,3 +20,6 @@ class BanditTask(BaseEnvironment):
         else:
             reward = np.random.choice(2, 1, p=[1-p, p]).item()
         return self.model_state, reward
+
+    def time_up(self, n_steps):
+        return False
