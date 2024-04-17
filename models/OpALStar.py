@@ -8,7 +8,7 @@ from scipy.stats import beta as beta_dist
 class OpALStar(BaseRL):
 
     def __init__(self, action_space, state_space, start_state, alpha_c, alpha_g, alpha_n, beta, gamma, rho, phi, k,
-                 r_mag=1, l_mag=-1, T=100, anneal_method=None, name=None, **kwargs):
+                 r_mag=1, l_mag=-1, T=100, anneal_method='variance', name=None, **kwargs):
         BaseRL.__init__(self, action_space=action_space, state_space=state_space, start_state=start_state, name=name)
         self.alpha_c = alpha_c
         self.alpha_g = alpha_g

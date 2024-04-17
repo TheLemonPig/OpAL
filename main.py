@@ -28,9 +28,9 @@ def main(config):
     results = simulator.run(reps=config['n_reps'], steps=config['epochs'], seed=config['seed'])
     res = None
     if config['verbose']:
-        res = verbose_helper(simulator, results, config['n_reps'], **config['verbose_params'])
+        res = verbose_helper(config, results, config['n_reps'], **config['verbose_params'])
     if config['plot']:
-        plot_helper(simulator, results, config['n_reps'], **config['plot_params'])
+        plot_helper(config, results, config['n_reps'], **config['plot_params'])
     return res
 
 
