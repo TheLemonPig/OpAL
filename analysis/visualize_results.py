@@ -1,18 +1,19 @@
 import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
 import numpy as np
 
-from utils import location_counter, action_counter
+from utils import location_counter, action_counter, get_square_triangles, state_action_counter
 
 
-def state_heatmap(simulator, results, n_reps, average=True, **kwargs):
-    for env_dic in simulator.environments:
+def state_heatmap(config, results, n_reps, average=True, **kwargs):
+    for env_dic in config['environment_params']:
         if env_dic['model'] == 'GridWorld':
-            for mod_dic in simulator.models:
+            for mod_dic in config['model_params']:
                 domain = env_dic['state_space']
                 if average:
                     location_counts = np.zeros(domain)
                     for n in range(n_reps):
-                        state_list = results[env_dic['name']][mod_dic['name']][n]['states']
+                        state_list = results[env_dic['name']][mod_dic['name']][n]['new_states']
                         n_attempts = sum(results[env_dic['name']][mod_dic['name']][n]['attempts'])
                         location_counts += location_counter(state_list, domain) / (n_reps * n_attempts)
                     plt.title(f'Average visitations per trial by {mod_dic["name"]} in {env_dic["name"]}')
@@ -37,7 +38,7 @@ def state_heatmap(simulator, results, n_reps, average=True, **kwargs):
                     x, y = domain
                     location_counts = np.zeros((x, y, n_reps))
                     for n in range(n_reps):
-                        state_list = results[env_dic['name']][mod_dic['name']][n]['states']
+                        state_list = results[env_dic['name']][mod_dic['name']][n]['new_states']
                         location_counts[n] = location_counter(state_list, domain)
                     n_rows = int(np.sqrt(n_reps))
                     n_cols = int(np.ceil(n_reps / n_rows))
@@ -58,7 +59,7 @@ def state_heatmap(simulator, results, n_reps, average=True, **kwargs):
                     # plt.colorbar()
                     # plt.show()
         elif env_dic['model'] == 'BanditTask':
-            for mod_dic in simulator.models:
+            for mod_dic in config['model_params']:
                 if average:
                     action_space = (len(env_dic['interactions']),)
                     if average:
@@ -75,10 +76,62 @@ def state_heatmap(simulator, results, n_reps, average=True, **kwargs):
                         plt.show()
 
 
-def plot_trends(simulator, results, n_reps, **kwargs):
+def action_heatmap(config, results, n_reps, average=True, **kwargs):
+    for env_dic in config['environment_params']:
+        if env_dic['model'] == 'GridWorld':
+            for mod_dic in config['model_params']:
+                fig, ax = plt.subplots()
+                domain = env_dic['state_space']
+                state_action_space = domain + (len(env_dic['interactions']),)
+                sa_counts = np.zeros(state_action_space)
+                for n in range(n_reps):
+                    state_list = results[env_dic['name']][mod_dic['name']][n]['states']
+                    action_list = results[env_dic['name']][mod_dic['name']][n]['actions']
+                    state_x = [state[0] for state in state_list]
+                    state_y = [state[1] for state in state_list]
+                    state_action_list = list(zip(state_x, state_y, action_list))
+                    n_attempts = sum(results[env_dic['name']][mod_dic['name']][n]['attempts'])
+                    sa_counts += state_action_counter(state_action_list, state_action_space) / (n_reps * n_attempts)
+                plt.title(f'Average state-actions per trial by {mod_dic["name"]} in {env_dic["name"]}')
+                for i in range(sa_counts.shape[0]):
+                    for j in range(sa_counts.shape[1]):
+                        square_triangles = get_square_triangles(j, domain[0]-i-1, 1)
+                        for k, triangle_coords in enumerate(square_triangles):
+                            k_i = (((k+1) % 2)/3) * ((-1) ** (k // 2))
+                            k_j = ((k % 2)/3) * ((-1) ** (k // 2))
+                            if (domain[0] - i - 1, j) not in env_dic['terminal_states'] and \
+                                    (env_dic['obstacles'] is None or (domain[0] - i - 1, j) not in env_dic['obstacles']):
+                                plt.text(j+k_j+0.5, domain[0]-(i+k_i+0.5), f'{sa_counts[i, j, k]:.2f}', ha='center', va='center', color='w')
+                                triangle = Polygon(triangle_coords, closed=True,
+                                                   color=plt.cm.viridis(sa_counts[i, j, k]))
+                                ax.add_patch(triangle)
+                for loc in env_dic['terminal_states']:
+                    square = plt.Rectangle((loc[1], domain[0] - loc[0] - 1), 1.0, 1.0, color='black', fill=True)
+                    plt.gca().add_patch(square)
+                    if loc in env_dic['success_terminals']:
+                        circle = plt.Circle(((loc[1]+0.5), domain[0]-loc[0]-0.5), 0.5, color='green', fill=False)
+                    else:
+                        circle = plt.Circle((loc[1]+0.5, domain[0]-loc[0]-0.5), 0.5, color='red', fill=False)
+                    plt.gca().add_patch(circle)
+                if env_dic['obstacles'] is not None:
+                    for loc in env_dic['obstacles']:
+                        square = plt.Rectangle((loc[1], domain[0]-loc[0]-1), 1.0, 1.0, color='gray', fill=True)
+                        plt.gca().add_patch(square)
+                # Adjusting plot
+                ax.set_xlim(0, domain[1])
+                ax.set_ylim(0, domain[0])
+                ax.set_aspect('equal', adjustable='box')
+                ax.set_xticks(np.arange(domain[1]))
+                ax.set_yticks(np.arange(domain[0]))
+                plt.colorbar(plt.cm.ScalarMappable(cmap='viridis'), ax=ax, label='Weights')
+                plt.grid(True)
+                plt.show()
+
+
+def plot_trends(config, results, n_reps, **kwargs):
     if kwargs['cumulative']:
-        for env_dic in simulator.environments:
-            for mod_dic in simulator.models:
+        for env_dic in config['environment_params']:
+            for mod_dic in config['model_params']:
                 avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['cumulative']),))
                 for n in range(n_reps):
                     avg_cum += results[env_dic['name']][mod_dic['name']][n]['cumulative']
@@ -88,8 +141,8 @@ def plot_trends(simulator, results, n_reps, **kwargs):
             plt.show()
     if kwargs['rolling']:
         roll = 100
-        for env_dic in simulator.environments:
-            for mod_dic in simulator.models:
+        for env_dic in config['environment_params']:
+            for mod_dic in config['model_params']:
                 avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['rolling']),))
                 for n in range(n_reps):
                     avg_cum += results[env_dic['name']][mod_dic['name']][n]['rolling']
@@ -99,9 +152,9 @@ def plot_trends(simulator, results, n_reps, **kwargs):
             plt.title('Rolling Average Reward')
             plt.show()
     if kwargs['rho']:
-        for env_dic in simulator.environments:
+        for env_dic in config['environment_params']:
             avg_cum = None
-            for mod_dic in simulator.models:
+            for mod_dic in config['model_params']:
                 if 'rho' in mod_dic.keys():
                     avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['rolling']),))
                     for n in range(n_reps):

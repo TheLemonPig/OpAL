@@ -1,5 +1,5 @@
 from simulator import Simulator
-from analysis import state_heatmap, success_metrics, plot_trends
+from analysis import state_heatmap, action_heatmap, success_metrics, plot_trends
 from simulation_config import config_
 
 import numpy as np
@@ -11,11 +11,13 @@ def verbose_helper(config, results, n_reps, **kwargs):
         return success_metrics(config, results, n_reps, **kwargs['success_metrics'])
 
 
-def plot_helper(simulator, results, n_reps, **kwargs):
+def plot_helper(config, results, n_reps, **kwargs):
     if 'state_heatmap' in kwargs:
-        state_heatmap(simulator, results, n_reps, **kwargs['state_heatmap'])
+        state_heatmap(config, results, n_reps, **kwargs['state_heatmap'])
+    if 'action_heatmap' in kwargs:
+        action_heatmap(config, results, n_reps, **kwargs['action_heatmap'])
     if 'trends' in kwargs:
-        plot_trends(simulator, results, n_reps, **kwargs['trends'])
+        plot_trends(config, results, n_reps, **kwargs['trends'])
 
 
 
@@ -30,7 +32,7 @@ def main(config):
     if config['verbose']:
         res = verbose_helper(config, results, config['n_reps'], **config['verbose_params'])
     if config['plot']:
-        plot_helper(simulator, results, config['n_reps'], **config['plot_params'])
+        plot_helper(config, results, config['n_reps'], **config['plot_params'])
     return res
 
 

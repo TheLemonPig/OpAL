@@ -30,6 +30,17 @@ def action_counter(action_list, action_space):
         action_counts[i] += action_list.count(i)
     return action_counts
 
+
+def state_action_counter(state_action_list, state_action_space):
+    state_action_counts = np.zeros(state_action_space)
+    (x, y, a) = state_action_space
+    for i in range(x):
+        for j in range(y):
+            for k in range(a):
+                state_action_counts[i, j, k] += state_action_list.count((i, j, k))
+    return state_action_counts
+
+
 def cumulative_reward(rewards):
     cumulative = []
     for n in range(len(rewards)-1):
@@ -37,3 +48,11 @@ def cumulative_reward(rewards):
     cumulative.append(sum(rewards))
     return cumulative
 
+
+def get_square_triangles(x, y, size):
+    half_size = size / 2
+    triangle1 = [(x + size, y), (x + half_size, y + half_size), (x, y), (x + size, y)]
+    triangle2 = [(x + size, y + size), (x + half_size, y + half_size), (x + size, y), (x + size, y + size)]
+    triangle3 = [(x, y + size), (x + half_size, y + half_size), (x + size, y + size), (x, y + size)]
+    triangle4 = [(x, y), (x + half_size, y + half_size), (x, y + size), (x, y)]
+    return [triangle1, triangle2, triangle3, triangle4]

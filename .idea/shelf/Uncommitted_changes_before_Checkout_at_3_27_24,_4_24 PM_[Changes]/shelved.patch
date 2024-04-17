@@ -1,0 +1,44 @@
+Index: simulation_config.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/simulation_config.py b/simulation_config.py
+--- a/simulation_config.py	
++++ b/simulation_config.py	
+@@ -7,7 +7,7 @@
+ ]
+ 
+ models = [
+-    actor_critic_,
++    #actor_critic_,
+     #opal_,
+     #opal_star_,
+     #opal_star_qs_,
+@@ -37,8 +37,8 @@
+             'probabilities': True,
+         }
+     },
+-    "epochs": 250,
+-    "n_reps": 20,
++    "epochs": 10000,
++    "n_reps": 1,
+     "environment_params": environments,
+     "model_params": models,
+     "seed": range(20),
+Index: environments/environment_config.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/environments/environment_config.py b/environments/environment_config.py
+--- a/environments/environment_config.py	
++++ b/environments/environment_config.py	
+@@ -24,6 +24,6 @@
+     "non_terminal_penalty": -0.0,
+     "terminal_states": {(2, 3): 0.2, (0, 3): 0.3},
+     "deterministic": True,
+-    "success_terminals": [(2, 3)],
++    "success_terminals": [(0, 3)],
+     "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)]
+ }

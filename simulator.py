@@ -35,25 +35,30 @@ class Simulator:
     def simulate(self, steps, model, environment):
         results = dict()
         results['states'] = []
+        results['new_states'] = []
         results['actions'] = []
         results['rewards'] = []
         results['attempts'] = []
         results['cumulative'] = []
         results['rolling'] = []
+        results['rho'] = []
         n_steps = 0
         # for n in tqdm(range(steps)):
         for n in range(steps):
             if n % 50 == 0:
                 x = 0
             action = model.act()
+            results['states'].append(model.state)
             new_state, reward = environment.interact(action)
             model.update(new_state, action, reward)
-            results['states'].append(new_state)
+            results['new_states'].append(new_state)
             results['actions'].append(action)
             results['rewards'].append(reward)
             results['cumulative'].append(sum(results['rewards']))
             roll = steps // 10
             results['rolling'].append(sum(results['rewards'][max(n-roll, 0):n])/(min(roll, n)+1))
+            if model.name.startswith('OpAL'):
+                results['rho'] = model.rho
             if environment.at_terminal() or environment.time_up(n_steps):
                 environment.restart()
                 model.restart()

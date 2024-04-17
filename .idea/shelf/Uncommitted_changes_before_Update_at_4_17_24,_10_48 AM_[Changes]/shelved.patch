@@ -1,0 +1,595 @@
+Index: analysis/quantify_results.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import numpy as np\n\nfrom utils import location_counter, action_counter\n\n\ndef success_metrics(simulator, results, n_reps, average=True, **kwargs):\n    for env_dic in simulator.environments:\n        if env_dic['name'] == 'GridWorld':\n            for mod_dic in simulator.models:\n                domain = env_dic['state_space']\n                terminals = env_dic['terminal_states']\n                success_terminals = env_dic['success_terminals']\n                if average:\n                    location_counts = np.zeros(domain)\n                    for n in range(n_reps):\n                        state_list = results[env_dic['name']][mod_dic['name']][n]['states']\n                        location_counts += location_counter(state_list, domain)\n                    n_success = 0\n                    n_failures = 0\n                    for terminal in terminals:\n                        if terminal in success_terminals:\n                            n_success += location_counts[terminal]\n                        else:\n                            n_failures += location_counts[terminal]\n                    n_attempts = n_success + n_failures\n                    print(f'{mod_dic[\"name\"]} success rate: {np.round(n_success/n_attempts*100, 2)}%')\n                    success_rate = np.round(n_success/n_attempts*100, 2)\n        elif env_dic['name'] == 'BanditTask':\n            for mod_dic in simulator.models:\n                success_actions = env_dic['success_actions']\n                action_space = (len(env_dic['interactions']),)\n                (n_actions, ) = action_space\n                if average:\n                    action_counts = np.zeros(action_space)\n                    for n in range(n_reps):\n                        action_list = results[env_dic['name']][mod_dic['name']][n]['actions']\n                        action_counts += action_counter(action_list, action_space)\n                    n_success = 0\n                    n_failures = 0\n                    for action in range(n_actions):\n                        if action in success_actions:\n                            n_success += action_counts[action]\n                        else:\n                            n_failures += action_counts[action]\n                    n_attempts = n_success + n_failures\n                    print(f'{mod_dic[\"name\"]} success rate: {np.round(n_success / n_attempts * 100, 2)}%')\n                    success_rate = np.round(n_success / n_attempts * 100, 2)\n    return success_rate\n\n\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/analysis/quantify_results.py b/analysis/quantify_results.py
+--- a/analysis/quantify_results.py	(revision d8c2a9f2556a04e412f14a20a7d3b877f6ad6ad1)
++++ b/analysis/quantify_results.py	(date 1712944268230)
+@@ -3,10 +3,11 @@
+ from utils import location_counter, action_counter
+ 
+ 
+-def success_metrics(simulator, results, n_reps, average=True, **kwargs):
+-    for env_dic in simulator.environments:
+-        if env_dic['name'] == 'GridWorld':
+-            for mod_dic in simulator.models:
++def success_metrics(config, results, n_reps, average=True, verbose=True, test_ratio=0.1, **kwargs):
++    success_rates = []
++    for env_dic in config['environment_params']:
++        if env_dic['model'] == 'GridWorld':
++            for mod_dic in config['model_params']:
+                 domain = env_dic['state_space']
+                 terminals = env_dic['terminal_states']
+                 success_terminals = env_dic['success_terminals']
+@@ -14,6 +15,9 @@
+                     location_counts = np.zeros(domain)
+                     for n in range(n_reps):
+                         state_list = results[env_dic['name']][mod_dic['name']][n]['states']
++                        if test_ratio > 0:
++                            n_epochs = config['epochs']
++                            state_list = state_list[-int(n_epochs*test_ratio):]
+                         location_counts += location_counter(state_list, domain)
+                     n_success = 0
+                     n_failures = 0
+@@ -23,10 +27,12 @@
+                         else:
+                             n_failures += location_counts[terminal]
+                     n_attempts = n_success + n_failures
+-                    print(f'{mod_dic["name"]} success rate: {np.round(n_success/n_attempts*100, 2)}%')
++                    if verbose:
++                        print(f'{mod_dic["name"]} success rate: {np.round(n_success/n_attempts*100, 2)}%')
+                     success_rate = np.round(n_success/n_attempts*100, 2)
+-        elif env_dic['name'] == 'BanditTask':
+-            for mod_dic in simulator.models:
++                    success_rates.append(success_rate)
++        elif env_dic['model'] == 'BanditTask':
++            for mod_dic in onfig['model_params']:
+                 success_actions = env_dic['success_actions']
+                 action_space = (len(env_dic['interactions']),)
+                 (n_actions, ) = action_space
+@@ -43,8 +49,10 @@
+                         else:
+                             n_failures += action_counts[action]
+                     n_attempts = n_success + n_failures
+-                    print(f'{mod_dic["name"]} success rate: {np.round(n_success / n_attempts * 100, 2)}%')
++                    if verbose:
++                        print(f'{mod_dic["name"]} success rate: {np.round(n_success / n_attempts * 100, 2)}%')
+                     success_rate = np.round(n_success / n_attempts * 100, 2)
+-    return success_rate
++                    success_rates.append(success_rate)
++    return success_rates
+ 
+ 
+Index: simulator.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from tqdm import tqdm\nfrom copy import deepcopy\nimport numpy as np\n\nfrom models import model_library\nfrom environments import environment_library\n\n\nclass Simulator:\n\n    def __init__(self, environments, models):\n        self.environments = environments\n        self.models = models\n        self.results = {env['name']:\n                        {model['name']: [] for model in models}\n                        for env in environments}\n\n    def run(self, reps, steps, seed=None):\n        for env_params in self.environments:\n            environment = environment_library[env_params['model']](**env_params)\n            for model_params in self.models:\n                model = model_library[model_params['model']](**model_params, state_space=env_params['state_space'],\n                                                            action_space=environment.interaction_space,\n                                                            start_state=env_params['start_state'])\n                # for n in tqdm(range(reps)):\n                for n in tqdm(range(reps), desc=f'Training {model.name} in {environment.name}'):\n                    if hasattr(seed, \"__getitem__\"):\n                        np.random.seed(seed[n])\n                    else:\n                        np.random.seed(seed)\n                    res = self.simulate(steps, deepcopy(model), deepcopy(environment))\n                    self.results[env_params['name']][model_params['name']].append(res)\n        return self.results\n\n    def simulate(self, steps, model, environment):\n        results = dict()\n        results['states'] = []\n        results['actions'] = []\n        results['rewards'] = []\n        results['attempts'] = []\n        results['cumulative'] = []\n        results['rolling'] = []\n        n_steps = 0\n        # for n in tqdm(range(steps)):\n        for n in range(steps):\n            if n % 50 == 0:\n                x = 0\n            action = model.act()\n            new_state, reward = environment.interact(action)\n            model.update(new_state, action, reward)\n            results['states'].append(new_state)\n            results['actions'].append(action)\n            results['rewards'].append(reward)\n            results['cumulative'].append(sum(results['rewards']))\n            roll = steps // 10\n            results['rolling'].append(sum(results['rewards'][max(n-roll, 0):n])/(min(roll, n)+1))\n            if environment.at_terminal() or environment.time_up(n_steps):\n                environment.restart()\n                model.restart()\n                n_steps = 0\n                results['attempts'].append(1)\n            else:\n                n_steps += 1\n                results['attempts'].append(0)\n\n        environment.restart()\n        model.restart()\n        return results\n\n    def get_predictions(self):\n        return {env.name:\n                {model.name: model.get_predictions() for model in self.models}\n                for env in self.environments}\n\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/simulator.py b/simulator.py
+--- a/simulator.py	(revision d8c2a9f2556a04e412f14a20a7d3b877f6ad6ad1)
++++ b/simulator.py	(date 1712941054689)
+@@ -40,6 +40,7 @@
+         results['attempts'] = []
+         results['cumulative'] = []
+         results['rolling'] = []
++        results['rho'] = []
+         n_steps = 0
+         # for n in tqdm(range(steps)):
+         for n in range(steps):
+@@ -48,6 +49,8 @@
+             action = model.act()
+             new_state, reward = environment.interact(action)
+             model.update(new_state, action, reward)
++            if hasattr(model, 'rho'):
++                results['rho'].append(model.rho)
+             results['states'].append(new_state)
+             results['actions'].append(action)
+             results['rewards'].append(reward)
+Index: simulation_config.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from environments.environment_config import *\nfrom models.model_config import *\n\nenvironments = [\n    # bandit_task_,\n    grid_world_\n]\n\nmodels = [\n    # actor_critic_,\n    # opal_,\n    # opal_star_,\n    # opal_star_qs_,\n    # opal_star_var_,\n    q_learning_\n]\n\nconfig_ = {\n    \"verbose\": True,\n    \"plot\": True,\n    \"verbose_params\": {\n        'success_metrics': {\n            'average': True\n        }\n    },\n    \"plot_params\": {\n        'state_heatmap': {\n            'average': True\n        },\n        'learning_rates': {\n            'average': True\n        },\n        'trends': {\n            'cumulative': True,\n            'rolling': True\n        }\n    },\n    \"epochs\": 10000,\n    \"n_reps\": 20,\n    \"environment_params\": environments,\n    \"model_params\": models,\n    \"seed\": range(200)\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/simulation_config.py b/simulation_config.py
+--- a/simulation_config.py	(revision d8c2a9f2556a04e412f14a20a7d3b877f6ad6ad1)
++++ b/simulation_config.py	(date 1712961071952)
+@@ -3,16 +3,19 @@
+ 
+ environments = [
+     # bandit_task_,
+-    grid_world_
++    grid_world_small_sparse,
++    # grid_world_small_rich,
++    # grid_world_large_sparse,
++    # grid_world_large_rich
+ ]
+ 
+ models = [
+     # actor_critic_,
+-    # opal_,
+-    # opal_star_,
++    # opal_plus_,
++    opal_star_,
+     # opal_star_qs_,
+     # opal_star_var_,
+-    q_learning_
++    # q_learning_
+ ]
+ 
+ config_ = {
+@@ -32,12 +35,13 @@
+         },
+         'trends': {
+             'cumulative': True,
+-            'rolling': True
+-        }
++            'rolling': True,
++            'rho': True
++        },
+     },
+-    "epochs": 10000,
+-    "n_reps": 20,
++    "epochs": 2000,
++    "n_reps": 50,
+     "environment_params": environments,
+     "model_params": models,
+-    "seed": range(200)
++    "seed": range(75)
+ }
+Index: analysis/visualize_results.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import matplotlib.pyplot as plt\nimport numpy as np\n\nfrom utils import location_counter, action_counter\n\n\ndef state_heatmap(simulator, results, n_reps, average=True, **kwargs):\n    for env_dic in simulator.environments:\n        if env_dic['name'] == 'GridWorld':\n            for mod_dic in simulator.models:\n                domain = env_dic['state_space']\n                if average:\n                    location_counts = np.zeros(domain)\n                    for n in range(n_reps):\n                        state_list = results[env_dic['name']][mod_dic['name']][n]['states']\n                        n_attempts = sum(results[env_dic['name']][mod_dic['name']][n]['attempts'])\n                        location_counts += location_counter(state_list, domain) / (n_reps * n_attempts)\n                    plt.title(f'Average visitations per trial by {mod_dic[\"name\"]}')\n                    for i in range(location_counts.shape[0]):\n                        for j in range(location_counts.shape[1]):\n                            plt.text(j, i, f'{location_counts[i, j]:.2f}', ha='center', va='center', color='w')\n                    for loc in env_dic['terminal_states']:\n                        if loc in env_dic['success_terminals']:\n                            circle = plt.Circle((loc[1], loc[0]), 0.5, color='green', fill=False)\n                        else:\n                            circle = plt.Circle((loc[1], loc[0]), 0.5, color='red', fill=False)\n                        plt.gca().add_patch(circle)\n                    plt.imshow(location_counts, cmap='viridis', interpolation='nearest')\n                    plt.colorbar()\n                    plt.show()\n                else:\n                    x, y = domain\n                    location_counts = np.zeros((x, y, n_reps))\n                    for n in range(n_reps):\n                        state_list = results[env_dic['name']][mod_dic['name']][n]['states']\n                        location_counts[n] = location_counter(state_list, domain)\n                    n_rows = int(np.sqrt(n_reps))\n                    n_cols = int(np.ceil(n_reps / n_rows))\n                    fig, axs = plt.subplots(n_rows, n_cols, figsize=(6, 8))\n                    for n in range(n_reps):\n                        row = n // n_rows\n                        col = n % n_cols\n                        axs[row, col].imshow(location_counts[..., n], cmap='viridis', interpolation='nearest')\n                        axs[row, col].set_title(f'Rep {n}')\n                        axs[row, col].legend()\n\n                    # Adjust layout to prevent subplot titles from overlapping\n                    plt.tight_layout()\n\n                    # Show the plot\n                    plt.show()\n                    # plt.imshow(location_counts, cmap='viridis', interpolation='nearest')\n                    # plt.colorbar()\n                    # plt.show()\n        elif env_dic['name'] == 'BanditTask':\n            for mod_dic in simulator.models:\n                if average:\n                    action_space = (len(env_dic['interactions']),)\n                    if average:\n                        action_counts = np.zeros(action_space)\n                        for n in range(n_reps):\n                            action_list = results[env_dic['name']][mod_dic['name']][n]['actions']\n                            action_counts += action_counter(action_list, action_space)\n                        average_counts = (action_counts / action_counts.sum()).reshape((1, -1))\n                        plt.title(f'Average actions per trial by {mod_dic[\"name\"]}')\n                        plt.imshow(average_counts, cmap='viridis', interpolation='nearest')\n                        for j in range(average_counts.shape[1]):\n                            plt.text(j, 0, f'{average_counts[0,j]:.2f}', ha='center', va='center', color='w')\n                        plt.colorbar()\n                        plt.show()\n\n\ndef plot_trends(simulator, results, n_reps, **kwargs):\n    if kwargs['cumulative']:\n        for env_dic in simulator.environments:\n            for mod_dic in simulator.models:\n                avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['cumulative']),))\n                for n in range(n_reps):\n                    avg_cum += results[env_dic['name']][mod_dic['name']][n]['cumulative']\n                avg_cum = avg_cum / n_reps\n                plt.plot(np.arange(len(avg_cum)), avg_cum, label=f\"{mod_dic['name']} in {env_dic['name']}\")\n        plt.legend()\n        plt.show()\n    if kwargs['rolling']:\n        roll = 100\n        for env_dic in simulator.environments:\n            for mod_dic in simulator.models:\n                avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['rolling']),))\n                for n in range(n_reps):\n                    avg_cum += results[env_dic['name']][mod_dic['name']][n]['rolling']\n                avg_cum = avg_cum / n_reps\n                plt.plot(np.arange(len(avg_cum[roll:])), avg_cum[roll:], label=f\"{mod_dic['name']} in {env_dic['name']}\")\n        plt.legend()\n        plt.title('Rolling Average Reward')\n        plt.show()\n\n\n\n# def learning_rates(simulator, results, n_reps, average=True, **kwargs):\n#     for env_dic in simulator.environments:\n#         if env_dic['name'] == 'GridWorld':\n#             for mod_dic in simulator.models:\n#                 if average:\n\n\n\nif __name__ == \"__main__\":\n    ...\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/analysis/visualize_results.py b/analysis/visualize_results.py
+--- a/analysis/visualize_results.py	(revision d8c2a9f2556a04e412f14a20a7d3b877f6ad6ad1)
++++ b/analysis/visualize_results.py	(date 1712944323255)
+@@ -6,7 +6,7 @@
+ 
+ def state_heatmap(simulator, results, n_reps, average=True, **kwargs):
+     for env_dic in simulator.environments:
+-        if env_dic['name'] == 'GridWorld':
++        if env_dic['model'] == 'GridWorld':
+             for mod_dic in simulator.models:
+                 domain = env_dic['state_space']
+                 if average:
+@@ -15,16 +15,21 @@
+                         state_list = results[env_dic['name']][mod_dic['name']][n]['states']
+                         n_attempts = sum(results[env_dic['name']][mod_dic['name']][n]['attempts'])
+                         location_counts += location_counter(state_list, domain) / (n_reps * n_attempts)
+-                    plt.title(f'Average visitations per trial by {mod_dic["name"]}')
++                    plt.title(f'Average visitations per trial by {mod_dic["name"]} in {env_dic["name"]}')
+                     for i in range(location_counts.shape[0]):
+                         for j in range(location_counts.shape[1]):
+-                            plt.text(j, i, f'{location_counts[i, j]:.2f}', ha='center', va='center', color='w')
++                            if env_dic['obstacles'] is None or (i, j) not in env_dic['obstacles']:
++                                plt.text(j, i, f'{location_counts[i, j]:.2f}', ha='center', va='center', color='w')
+                     for loc in env_dic['terminal_states']:
+                         if loc in env_dic['success_terminals']:
+                             circle = plt.Circle((loc[1], loc[0]), 0.5, color='green', fill=False)
+                         else:
+                             circle = plt.Circle((loc[1], loc[0]), 0.5, color='red', fill=False)
+                         plt.gca().add_patch(circle)
++                    if env_dic['obstacles'] is not None:
++                        for loc in env_dic['obstacles']:
++                            square = plt.Rectangle((loc[1]-0.5, loc[0]-0.5), 1.0, 1.0, color='gray', fill=True)
++                            plt.gca().add_patch(square)
+                     plt.imshow(location_counts, cmap='viridis', interpolation='nearest')
+                     plt.colorbar()
+                     plt.show()
+@@ -52,7 +57,7 @@
+                     # plt.imshow(location_counts, cmap='viridis', interpolation='nearest')
+                     # plt.colorbar()
+                     # plt.show()
+-        elif env_dic['name'] == 'BanditTask':
++        elif env_dic['model'] == 'BanditTask':
+             for mod_dic in simulator.models:
+                 if average:
+                     action_space = (len(env_dic['interactions']),)
+@@ -79,8 +84,8 @@
+                     avg_cum += results[env_dic['name']][mod_dic['name']][n]['cumulative']
+                 avg_cum = avg_cum / n_reps
+                 plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']} in {env_dic['name']}")
+-        plt.legend()
+-        plt.show()
++            plt.legend()
++            plt.show()
+     if kwargs['rolling']:
+         roll = 100
+         for env_dic in simulator.environments:
+@@ -90,9 +95,25 @@
+                     avg_cum += results[env_dic['name']][mod_dic['name']][n]['rolling']
+                 avg_cum = avg_cum / n_reps
+                 plt.plot(np.arange(len(avg_cum[roll:])), avg_cum[roll:], label=f"{mod_dic['name']} in {env_dic['name']}")
+-        plt.legend()
+-        plt.title('Rolling Average Reward')
+-        plt.show()
++            plt.legend()
++            plt.title('Rolling Average Reward')
++            plt.show()
++    if kwargs['rho']:
++        for env_dic in simulator.environments:
++            avg_cum = None
++            for mod_dic in simulator.models:
++                if 'rho' in mod_dic.keys():
++                    avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['rolling']),))
++                    for n in range(n_reps):
++                        avg_cum += results[env_dic['name']][mod_dic['name']][n]['rho']
++                    avg_cum = avg_cum / n_reps
++                    plt.xlabel('epochs')
++                    plt.ylabel('rho')
++                    plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']} in {env_dic['name']}")
++            if avg_cum is not None:
++                plt.legend()
++                plt.title('Rho Value over Training')
++                plt.show()
+ 
+ 
+ 
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from simulator import Simulator\nfrom analysis import state_heatmap, success_metrics, plot_trends\nfrom simulation_config import config_\n\nimport numpy as np\nfrom itertools import product\n\n\ndef verbose_helper(simulator, results, n_reps, **kwargs):\n    if 'success_metrics' in kwargs:\n        return success_metrics(simulator, results, n_reps, **kwargs['success_metrics'])\n\n\ndef plot_helper(simulator, results, n_reps, **kwargs):\n    if 'state_heatmap' in kwargs:\n        state_heatmap(simulator, results, n_reps, **kwargs['state_heatmap'])\n    if 'trends' in kwargs:\n        plot_trends(simulator, results, n_reps, **kwargs['trends'])\n\n\n\ndef grid_search():\n    ...\n\n\ndef main(config):\n    simulator = Simulator(config['environment_params'], config['model_params'])\n    results = simulator.run(reps=config['n_reps'], steps=config['epochs'], seed=config['seed'])\n    res = None\n    if config['verbose']:\n        res = verbose_helper(simulator, results, config['n_reps'], **config['verbose_params'])\n    if config['plot']:\n        plot_helper(simulator, results, config['n_reps'], **config['plot_params'])\n    return res\n\n\nif __name__ == \"__main__\":\n    main(config_)\n    # env_params = [{(2, 3): 0.8, (0, 3): 0.7}, {(2, 3): 0.3, (0, 3): 0.2}]\n    # env_params = [{(0, 5): 0.2, (2, 7): 0.1, (4, 5): 0.3},\n    #               {(0, 5): 0.7, (2, 7): 0.6, (4, 5): 0.8}]\n    # hyperparams = {'alpha': (0.4, 0.7, 0.1),  # 'alpha_c': (0.5, 0.7, 0.1),\n    #                'beta': (4.0, 7.0, 1.0), 'gamma': (0.7, 1.0, 0.1)}\n    # # hyperparams = {'k': (5.0, 9.0, 4.0), 'phi': (1.4, 1.9, 0.1)}\n    # lists_of_hyperparams = {k: np.arange(*v) for k, v in hyperparams.items()}\n    # param_permutations = list(product(*lists_of_hyperparams.values()))\n    # model = config_['model_params'][0]\n    # environment = config_['environment_params'][0]\n    # meta_results = []\n    # for env_par in env_params:\n    #     environment['terminal_states'] = env_par\n    #     config_['environment_params'][0] = environment\n    #     results = np.zeros((len(param_permutations),))\n    #     for idx, params in enumerate(param_permutations):\n    #         if idx % 10 == 0:\n    #             print(f'\\n{idx} out of {len(param_permutations)}\\n')\n    #         new_params = {k: np.round(params[idx], 5) for idx, k in enumerate(hyperparams.keys())}\n    #         for param in new_params.keys():\n    #             if param == 'alpha' and model['model'].startswith(\"OpAL\"):\n    #                 model[param+'_g'] = new_params[param]\n    #                 model[param + '_n'] = new_params[param]\n    #                 model[param + '_c'] = new_params[param]\n    #             else:\n    #                 model[param] = new_params[param]\n    #         config_['model_params'][0] = model\n    #\n    #         print(new_params)\n    #         success_rate = main(config_)\n    #         results[idx] = success_rate\n    #     meta_results.append(results)\n    # collective = meta_results[0] + meta_results[1]\n    # args = np.argsort(collective)\n    # print(f'\\n{model[\"name\"]}:\\n')\n    # for i in range(20):\n    #     arg = args[-(i+1)]\n    #     print(f'{np.round(param_permutations[arg], 5)}: {meta_results[0][arg]}, {meta_results[1][arg]}, {collective[arg]}')\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	(revision d8c2a9f2556a04e412f14a20a7d3b877f6ad6ad1)
++++ b/main.py	(date 1712941146626)
+@@ -6,9 +6,9 @@
+ from itertools import product
+ 
+ 
+-def verbose_helper(simulator, results, n_reps, **kwargs):
++def verbose_helper(config, results, n_reps, **kwargs):
+     if 'success_metrics' in kwargs:
+-        return success_metrics(simulator, results, n_reps, **kwargs['success_metrics'])
++        return success_metrics(config, results, n_reps, **kwargs['success_metrics'])
+ 
+ 
+ def plot_helper(simulator, results, n_reps, **kwargs):
+@@ -28,7 +28,7 @@
+     results = simulator.run(reps=config['n_reps'], steps=config['epochs'], seed=config['seed'])
+     res = None
+     if config['verbose']:
+-        res = verbose_helper(simulator, results, config['n_reps'], **config['verbose_params'])
++        res = verbose_helper(config, results, config['n_reps'], **config['verbose_params'])
+     if config['plot']:
+         plot_helper(simulator, results, config['n_reps'], **config['plot_params'])
+     return res
+Index: models/model_config.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># Model Configs\n\nactor_critic_ = {\n    \"name\": 'ActorCritic',\n    \"model\": 'ActorCritic',\n    \"alpha\": 0.6,\n    \"beta\": 2.0,\n    \"gamma\": 0.6,\n}\n\nopal_ = {\n    \"name\": 'OpAL',\n    \"model\": 'OpAL',\n    \"alpha_g\": 0.4,\n    \"alpha_n\": 0.4,\n    \"alpha_c\": 0.4,\n    \"beta\": 5.0,\n    \"gamma\": 0.7,\n    \"rho\": 0\n}\n\nopal_star_ = {\n    \"name\": 'OpALStar',\n    \"model\": 'OpALStar',\n    \"alpha_g\": 0.4,\n    \"alpha_n\": 0.4,\n    \"alpha_c\": 0.4,\n    \"beta\": 4.0,\n    \"gamma\": 0.9,\n    \"rho\": 0,\n    \"phi\": 1.7,\n    \"k\": 5.0,\n    \"T\": 50000.0,\n    \"R_mag\": 1.0,\n    \"L_mag\": -1.0,\n    \"anneal_method\": ''\n}\n\nopal_star_var_ = {\n    \"name\": 'OpALStarVariance',\n    \"model\": 'OpALStar',\n    \"alpha_g\": 0.5,\n    \"alpha_n\": 0.5,\n    \"alpha_c\": 0.6,\n    \"beta\": 4.0,\n    \"gamma\": 0.6,\n    \"rho\": 0,\n    \"phi\": 1.7,\n    \"k\": 5.0,\n    \"T\": 50000.0,\n    \"R_mag\": 1.0,\n    \"L_mag\": -1.0,\n    \"anneal_method\": 'variance'\n}\n\nq_learning_ = {\n    \"name\": 'QLearning',\n    \"model\": 'QLearning',\n    \"alpha\": 0.1,\n    \"beta\": 6.0,\n    \"gamma\": 0.9,\n}\n\nopal_star_qs_ = {\n    \"name\": 'OpALStarQs',\n    \"model\": 'OpALStar',\n    \"alpha_g\": 0.5,\n    \"alpha_n\": 0.5,\n    \"alpha_c\": 0.6,\n    \"beta\": 4.0,\n    \"gamma\": 0.6,\n    \"rho\": 0,\n    \"phi\": 1.0,\n    \"k\": 1.0,\n    \"T\": 500000.0,\n    \"R_mag\": 1.0,\n    \"L_mag\": -1.0,\n    \"anneal_method\": 'qs'\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/models/model_config.py b/models/model_config.py
+--- a/models/model_config.py	(revision d8c2a9f2556a04e412f14a20a7d3b877f6ad6ad1)
++++ b/models/model_config.py	(date 1712958877736)
+@@ -3,77 +3,49 @@
+ actor_critic_ = {
+     "name": 'ActorCritic',
+     "model": 'ActorCritic',
+-    "alpha": 0.6,
+-    "beta": 2.0,
+-    "gamma": 0.6,
++    "alpha": 0.7,
++    "beta": 1.0,
++    "gamma": 0.98,
+ }
+ 
+-opal_ = {
+-    "name": 'OpAL',
+-    "model": 'OpAL',
+-    "alpha_g": 0.4,
+-    "alpha_n": 0.4,
+-    "alpha_c": 0.4,
+-    "beta": 5.0,
+-    "gamma": 0.7,
+-    "rho": 0
++q_learning_ = {
++    "name": 'QLearning',
++    "model": 'QLearning',
++    "alpha": 0.7,
++    "beta": 20.0,
++    "gamma": 0.97,
+ }
+ 
+ opal_star_ = {
+-    "name": 'OpALStar',
++    "name": 'OpAL*',
+     "model": 'OpALStar',
+-    "alpha_g": 0.4,
+-    "alpha_n": 0.4,
+-    "alpha_c": 0.4,
+-    "beta": 4.0,
+-    "gamma": 0.9,
++    "alpha_g": 0.3,
++    "alpha_n": 0.3,
++    "alpha_c": 0.7,
++    "beta": 3.0,
++    "gamma": 0.97,
+     "rho": 0,
+     "phi": 1.7,
+     "k": 5.0,
+     "T": 50000.0,
+     "R_mag": 1.0,
+-    "L_mag": -1.0,
+-    "anneal_method": ''
++    "L_mag": -0.04,
++    "anneal_method": 'variance'
+ }
+ 
+-opal_star_var_ = {
+-    "name": 'OpALStarVariance',
+-    "model": 'OpALStar',
+-    "alpha_g": 0.5,
+-    "alpha_n": 0.5,
++opal_plus_ = {
++    "name": 'OpAL+',
++    "model": 'OpALPlus',
++    "alpha_g": 0.4,
++    "alpha_n": 0.6,
+     "alpha_c": 0.6,
+-    "beta": 4.0,
+-    "gamma": 0.6,
++    "beta": 2.0,
++    "gamma": 0.98,
+     "rho": 0,
+     "phi": 1.7,
+     "k": 5.0,
+     "T": 50000.0,
+     "R_mag": 1.0,
+-    "L_mag": -1.0,
++    "L_mag": -0.04,
+     "anneal_method": 'variance'
+ }
+-
+-q_learning_ = {
+-    "name": 'QLearning',
+-    "model": 'QLearning',
+-    "alpha": 0.1,
+-    "beta": 6.0,
+-    "gamma": 0.9,
+-}
+-
+-opal_star_qs_ = {
+-    "name": 'OpALStarQs',
+-    "model": 'OpALStar',
+-    "alpha_g": 0.5,
+-    "alpha_n": 0.5,
+-    "alpha_c": 0.6,
+-    "beta": 4.0,
+-    "gamma": 0.6,
+-    "rho": 0,
+-    "phi": 1.0,
+-    "k": 1.0,
+-    "T": 500000.0,
+-    "R_mag": 1.0,
+-    "L_mag": -1.0,
+-    "anneal_method": 'qs'
+-}
+Index: environments/environment_config.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># Environment Configs\n\nbandit_task_ = {\n    \"name\": 'BanditTask',\n    \"model\": 'BanditTask',\n    \"state_space\": (1,),\n    \"start_state\": (0,),\n    \"deterministic\": False,\n    \"ps\": [0.2, 0.3, 0.1, 0.2],\n    \"success_actions\": [1],\n    \"interactions\": [0, 1]\n}\n\ngrid_world_ = {\n    \"name\": 'GridWorld',\n    \"model\": 'GridWorld',\n    \"state_space\": (3, 4),\n    \"start_state\": (1, 0),\n    \"non_terminal_penalty\": -0.04,\n    \"terminal_states\": {(0, 3): 0.1, (2, 3): 1.0},\n    \"deterministic\": True,\n    \"success_terminals\": [(2, 3)],\n    \"interactions\": [(1, 0), (0, 1), (-1, 0), (0, -1)],\n    \"obstacles\": []\n}\n\n# grid_world_ = {\n#     \"name\": 'GridWorld',\n#     \"model\": 'GridWorld',\n#     \"state_space\": (5, 8),\n#     \"start_state\": (2, 0),\n#     \"non_terminal_penalty\": -0.04,\n#     \"terminal_states\": {(0, 5): 0.2, (2, 7): 0.1, (4, 5): 0.3},\n#     \"deterministic\": True,\n#     \"success_terminals\": [(4, 5)],\n#     \"interactions\": [(1, 0), (0, 1), (-1, 0), (0, -1)],\n#     \"obstacles\": []\n# }\n\ngrid_world_room = {\n    \"name\": 'GridWorld',\n    \"model\": 'GridWorld',\n    \"state_space\": (5, 8),\n    \"start_state\": (2, 0),\n    \"non_terminal_penalty\": -0.04,\n    \"terminal_states\": {(2, 7): 1.0, (1, 7): 0.01},\n    \"deterministic\": False,\n    \"success_terminals\": [(2, 7)],\n    \"interactions\": [(1, 0), (0, 1), (-1, 0), (0, -1)],\n    \"obstacles\": [(0, 3), (1, 3), (3, 3), (4, 3)]\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/environments/environment_config.py b/environments/environment_config.py
+--- a/environments/environment_config.py	(revision d8c2a9f2556a04e412f14a20a7d3b877f6ad6ad1)
++++ b/environments/environment_config.py	(date 1712940326313)
+@@ -49,3 +49,51 @@
+     "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
+     "obstacles": [(0, 3), (1, 3), (3, 3), (4, 3)]
+ }
++grid_world_small_sparse = {
++    "name": 'GridWorldSmallSparse',
++    "model": 'GridWorld',
++    "state_space": (3, 4),
++    "start_state": (1, 0),
++    "non_terminal_penalty": -0.04,
++    "terminal_states": {(0, 3): 0.2, (2, 3): 0.3},
++    "deterministic": False,
++    "success_terminals": [(2, 3)],
++    "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
++    "obstacles": None
++}
++grid_world_small_rich = {
++    "name": 'GridWorldSmallRich',
++    "model": 'GridWorld',
++    "state_space": (3, 4),
++    "start_state": (1, 0),
++    "non_terminal_penalty": -0.04,
++    "terminal_states": {(0, 3): 0.7, (2, 3): 0.8},
++    "deterministic": False,
++    "success_terminals": [(2, 3)],
++    "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
++    "obstacles": None
++}
++grid_world_large_sparse = {
++    "name": 'GridWorldLargeSparse',
++    "model": 'GridWorld',
++    "state_space": (5, 8),
++    "start_state": (2, 0),
++    "non_terminal_penalty": -0.04,
++    "terminal_states": {(0, 5): 0.2, (2, 7): 0.1, (4, 5): 0.3},
++    "deterministic": False,
++    "success_terminals": [(4, 5)],
++    "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
++    "obstacles": [(2,2),(2,3)]
++}
++grid_world_large_rich = {
++    "name": 'GridWorldLargeRich',
++    "model": 'GridWorld',
++    "state_space": (5, 8),
++    "start_state": (2, 0),
++    "non_terminal_penalty": -0.04,
++    "terminal_states": {(0, 5): 0.7, (2, 7): 0.6, (4, 5): 0.8},
++    "deterministic": False,
++    "success_terminals": [(4, 5)],
++    "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
++    "obstacles": [(2,2),(2,3)]
++}
+Index: models/__init__.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from .actor_critic import ActorCritic\nfrom .OpAL import OpAL\nfrom .OpALStar import OpALStar\nfrom .q_learning import QLearning\n\n\nmodel_library = {\n    ActorCritic.__name__: ActorCritic,\n    OpAL.__name__: OpAL,\n    OpALStar.__name__: OpALStar,\n    QLearning.__name__: QLearning\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/models/__init__.py b/models/__init__.py
+--- a/models/__init__.py	(revision d8c2a9f2556a04e412f14a20a7d3b877f6ad6ad1)
++++ b/models/__init__.py	(date 1712940609065)
+@@ -1,12 +1,12 @@
+ from .actor_critic import ActorCritic
+-from .OpAL import OpAL
++from .OpALPlus import OpALPlus
+ from .OpALStar import OpALStar
+ from .q_learning import QLearning
+ 
+ 
+ model_library = {
+     ActorCritic.__name__: ActorCritic,
+-    OpAL.__name__: OpAL,
++    OpALPlus.__name__: OpALPlus,
+     OpALStar.__name__: OpALStar,
+     QLearning.__name__: QLearning
+ }
+Index: models/q_learning.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import numpy as np\n\nfrom models.model import BaseRL\nfrom utils import safe_softmax\n\n\nclass QLearning(BaseRL):\n\n    def __init__(self, action_space, state_space, start_state, alpha, beta, gamma=0, name=None, **kwargs):\n        BaseRL.__init__(self, action_space=action_space, state_space=state_space, start_state=start_state, name=name)\n        self.alpha = alpha\n        self.beta = beta\n        self.gamma = gamma\n        self.qs = np.ones(state_space+action_space) * 0.5\n\n    def act(self):\n        p_values = safe_softmax(self.qs[self.state]*self.beta)\n        action = np.random.choice(len(p_values), 1, p=p_values).item()\n        return action\n\n    # TODO: Put model responsible for restarting task\n\n    def update(self, new_state, action, reward):\n        delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma\n        self.qs[self.state][action] += self.alpha * delta\n        self.state = new_state\n\n    def get_weights(self):\n        return {\"qs\": self.qs}\n\n    def get_optimal_policy(self):\n        return self.qs.argmax(axis=-1)\n\n\n\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/models/q_learning.py b/models/q_learning.py
+--- a/models/q_learning.py	(revision d8c2a9f2556a04e412f14a20a7d3b877f6ad6ad1)
++++ b/models/q_learning.py	(date 1712623200633)
+@@ -11,7 +11,7 @@
+         self.alpha = alpha
+         self.beta = beta
+         self.gamma = gamma
+-        self.qs = np.ones(state_space+action_space) * 0.5
++        self.qs = np.ones(state_space+action_space) * 1.0
+ 
+     def act(self):
+         p_values = safe_softmax(self.qs[self.state]*self.beta)
+Index: models/OpALPlus.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/models/OpALPlus.py b/models/OpALPlus.py
+new file mode 100644
+--- /dev/null	(date 1712940416328)
++++ b/models/OpALPlus.py	(date 1712940416328)
+@@ -0,0 +1,98 @@
++import numpy as np
++
++from models.model import BaseRL
++from utils import safe_softmax
++from scipy.stats import beta as beta_dist
++
++
++class OpALPlus(BaseRL):
++
++    def __init__(self, action_space, state_space, start_state, alpha_c, alpha_g, alpha_n, beta, gamma, rho, phi, k,
++                 r_mag=1, l_mag=-1, T=100, anneal_method='variance', name=None, **kwargs):
++        BaseRL.__init__(self, action_space=action_space, state_space=state_space, start_state=start_state, name=name)
++        self.alpha_c = alpha_c
++        self.alpha_g = alpha_g
++        self.alpha_n = alpha_n
++        self.beta = beta
++        self.gamma = gamma
++        self.rho = rho
++        self.phi = phi
++        self.k = k
++        self.T = T
++        self.anneal_method = anneal_method
++        self.visitation_counter = np.zeros(state_space+action_space)
++        self.qs = np.ones(state_space+action_space) * 0.5
++        self.gs = np.ones(state_space+action_space) * 1.0
++        self.ns = np.ones(state_space+action_space) * 1.0
++        self.eta_c = 1
++        self.gamma_c = 1
++        self.anneal = 1
++        self.r_mag = r_mag
++        self.l_mag = l_mag
++        self.action = None
++
++    def act(self):
++        self.visitation_counter[self.state] += 1
++        beta_g = self.beta*np.max([0, (1+self.rho)])
++        beta_n = self.beta*np.max([0, (1-self.rho)])
++        net = beta_g * self.gs[self.state] - beta_n * self.ns[self.state]
++        if self.anneal_method == 'qs':
++            w = 1/(1+np.mean(abs(net)))
++            net = net * (1-w) + self.qs[self.state] * w
++        p_values = safe_softmax(net)
++        action = np.random.choice(len(p_values), 1, p=p_values).item()
++        self.action = action
++        return action
++
++    # TODO: Put model responsible for restarting task
++
++    def update(self, new_state, action, reward):
++        self.update_metacritic(reward)
++        delta = self.update_critic(new_state, action, reward)
++        self.update_actor(action, delta)
++        self.state = new_state
++
++    def update_metacritic(self, reward):
++        self.eta_c += reward - self.l_mag
++        self.gamma_c += self.r_mag - reward
++        mean, var = beta_dist.stats(self.eta_c, self.gamma_c, moments='mv')
++        std = np.sqrt(var)
++        S = int(mean - self.phi * std > 0.5 or mean + self.phi * std < 0.5)
++        # self.rho = S * (mean - 0.5) * self.k
++        if self.anneal_method == 'variance':
++            self.anneal = 1/(1+1/(self.T*var))
++        elif self.anneal_method == 'visitation':
++            self.anneal = 1/(self.visitation_counter[self.state][self.action])
++        else:
++            self.anneal = 1
++
++    def update_critic(self, new_state, action, reward):
++        # States
++        delta = reward - self.qs[self.state][0] + self.qs[new_state][0] * self.gamma
++        self.qs[self.state][0] += self.alpha_c * delta
++        # # State-actions
++        # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
++        # self.qs[self.state][action] += self.alpha_c * delta
++        # Actions
++        # delta = reward - self.qs[(0, 0)][action] + self.qs[(0, 0)].max() * self.gamma
++        # self.qs[(0, 0)][action] += self.alpha_c * delta
++        # # Mix-up
++        # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
++        # self.qs[self.state] += self.alpha_c * delta
++        return delta
++
++    def update_actor(self, action, delta):
++        alpha_gt = self.alpha_g * self.anneal
++        alpha_nt = self.alpha_n * self.anneal
++        self.gs[self.state][action] += alpha_gt * self.f(delta) * self.gs[self.state][action]
++        self.ns[self.state][action] += alpha_nt * self.f(-delta) * self.ns[self.state][action]
++
++    def f(self, delta):
++        return delta/(self.r_mag-self.l_mag)
++
++    def get_weights(self):
++        return {"qs": self.qs, "gs": self.gs, "ns": self.ns}
++
++    def get_optimal_policy(self):
++        # This is out of date
++        return (self.gs - self.ns).argmax(axis=-1)
