@@ -52,9 +52,9 @@ grid_world_large_rich = {
     "state_space": (5, 8),
     "start_state": (2, 0),
     "non_terminal_penalty": -0.04,
-    "terminal_states": {(0, 5): 0.7, (2, 7): 0.6, (4, 5): 0.8},
+    "terminal_states": {(0, 5): 0.7, (2, 7): 0.6, (4, 6): 0.8},
     "deterministic": False,
-    "success_terminals": [(4, 5)],
+    "success_terminals": [(4, 6)],
     "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
-    "obstacles": [(2,2),(2,3)]
+    "obstacles": [(0,0),(1,3),(2,3),(4,3),(1,0),(1,1),(3,0),(3,1)]
 }
