@@ -3,10 +3,11 @@ import numpy as np
 from utils import location_counter, action_counter
 
 
-def success_metrics(simulator, results, n_reps, average=True, **kwargs):
-    for env_dic in simulator.environments:
-        if env_dic['name'] == 'GridWorld':
-            for mod_dic in simulator.models:
+def success_metrics(config, results, n_reps, average=True, verbose=True, test_ratio=0, **kwargs):
+    success_rates = []
+    for env_dic in config['environment_params']:
+        if env_dic['model'] == 'GridWorld':
+            for mod_dic in config['model_params']:
                 domain = env_dic['state_space']
                 terminals = env_dic['terminal_states']
                 success_terminals = env_dic['success_terminals']
@@ -14,6 +15,9 @@ def success_metrics(simulator, results, n_reps, average=True, **kwargs):
                     location_counts = np.zeros(domain)
                     for n in range(n_reps):
                         state_list = results[env_dic['name']][mod_dic['name']][n]['states']
+                        if test_ratio > 0:
+                            n_epochs = config['epochs']
+                            state_list = state_list[-int(n_epochs*test_ratio):]
                         location_counts += location_counter(state_list, domain)
                     n_success = 0
                     n_failures = 0
@@ -23,10 +27,12 @@ def success_metrics(simulator, results, n_reps, average=True, **kwargs):
                         else:
                             n_failures += location_counts[terminal]
                     n_attempts = n_success + n_failures
-                    print(f'{mod_dic["name"]} success rate: {np.round(n_success/n_attempts*100, 2)}%')
+                    if verbose:
+                        print(f'{mod_dic["name"]} success rate: {np.round(n_success/n_attempts*100, 2)}%')
                     success_rate = np.round(n_success/n_attempts*100, 2)
-        elif env_dic['name'] == 'BanditTask':
-            for mod_dic in simulator.models:
+                    success_rates.append(success_rate)
+        elif env_dic['model'] == 'BanditTask':
+            for mod_dic in onfig['model_params']:
                 success_actions = env_dic['success_actions']
                 action_space = (len(env_dic['interactions']),)
                 (n_actions, ) = action_space
@@ -43,8 +49,10 @@ def success_metrics(simulator, results, n_reps, average=True, **kwargs):
                         else:
                             n_failures += action_counts[action]
                     n_attempts = n_success + n_failures
-                    print(f'{mod_dic["name"]} success rate: {np.round(n_success / n_attempts * 100, 2)}%')
+                    if verbose:
+                        print(f'{mod_dic["name"]} success rate: {np.round(n_success / n_attempts * 100, 2)}%')
                     success_rate = np.round(n_success / n_attempts * 100, 2)
-    return success_rate
+                    success_rates.append(success_rate)
+    return success_rates
 
 

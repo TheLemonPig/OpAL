@@ -5,3 +5,8 @@
 /.idea/inspectionProfiles/Project_Default.xml
 /.idea/vcs.xml
 /.idea/workspace.xml
+
+Logs/*.pkl
+*.out
+*.err
+*.pkl
