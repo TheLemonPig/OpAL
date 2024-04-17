@@ -1,5 +1,5 @@
 from simulator import Simulator
-from analysis import state_heatmap, action_heatmap, success_metrics, plot_trends
+from analysis import state_heatmap, action_heatmap, weight_heatmap, success_metrics, plot_trends
 from simulation_config import config_
 
 import numpy as np
@@ -16,6 +16,8 @@ def plot_helper(config, results, n_reps, **kwargs):
         state_heatmap(config, results, n_reps, **kwargs['state_heatmap'])
     if 'action_heatmap' in kwargs:
         action_heatmap(config, results, n_reps, **kwargs['action_heatmap'])
+    if 'weight_heatmap' in kwargs:
+        weight_heatmap(config, results, n_reps, **kwargs['weight_heatmap'])
     if 'trends' in kwargs:
         plot_trends(config, results, n_reps, **kwargs['trends'])
 

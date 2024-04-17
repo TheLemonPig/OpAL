@@ -20,7 +20,7 @@ def state_heatmap(config, results, n_reps, average=True, **kwargs):
                     for i in range(location_counts.shape[0]):
                         for j in range(location_counts.shape[1]):
                             if env_dic['obstacles'] is None or (i, j) not in env_dic['obstacles']:
-                                plt.text(j, i, f'{location_counts[i, j]:.2f}', ha='center', va='center', color='w')
+                                plt.text(j, i, f'{np.round(location_counts[i, j],decimals=2)}', ha='center', va='center', color='w')
                     for loc in env_dic['terminal_states']:
                         if loc in env_dic['success_terminals']:
                             circle = plt.Circle((loc[1], loc[0]), 0.5, color='green', fill=False)
@@ -71,7 +71,7 @@ def state_heatmap(config, results, n_reps, average=True, **kwargs):
                         plt.title(f'Average actions per trial by {mod_dic["name"]}')
                         plt.imshow(average_counts, cmap='viridis', interpolation='nearest')
                         for j in range(average_counts.shape[1]):
-                            plt.text(j, 0, f'{average_counts[0,j]:.2f}', ha='center', va='center', color='w')
+                            plt.text(j, 0, f'{np.round(average_counts[0,j],decimals=2)}', ha='center', va='center', color='w')
                         plt.colorbar()
                         plt.show()
 
@@ -101,7 +101,7 @@ def action_heatmap(config, results, n_reps, average=True, **kwargs):
                             k_j = ((k % 2)/3) * ((-1) ** (k // 2))
                             if (domain[0] - i - 1, j) not in env_dic['terminal_states'] and \
                                     (env_dic['obstacles'] is None or (domain[0] - i - 1, j) not in env_dic['obstacles']):
-                                plt.text(j+k_j+0.5, domain[0]-(i+k_i+0.5), f'{sa_counts[i, j, k]:.2f}', ha='center', va='center', color='w')
+                                plt.text(j+k_j+0.5, domain[0]-(i+k_i+0.5), f'{np.round(sa_counts[i, j, k],decimals=2)}', ha='center', va='center', color='w')
                                 triangle = Polygon(triangle_coords, closed=True,
                                                    color=plt.cm.viridis(sa_counts[i, j, k]))
                                 ax.add_patch(triangle)
@@ -113,6 +113,8 @@ def action_heatmap(config, results, n_reps, average=True, **kwargs):
                     else:
                         circle = plt.Circle((loc[1]+0.5, domain[0]-loc[0]-0.5), 0.5, color='red', fill=False)
                     plt.gca().add_patch(circle)
+                    plt.text((loc[1] + 0.5), domain[0] - loc[0] - 0.5,
+                             f'{np.round(env_dic["terminal_states"][loc],decimals=2)}', ha='center', va='center', color='w')
                 if env_dic['obstacles'] is not None:
                     for loc in env_dic['obstacles']:
                         square = plt.Rectangle((loc[1], domain[0]-loc[0]-1), 1.0, 1.0, color='gray', fill=True)
@@ -126,6 +128,91 @@ def action_heatmap(config, results, n_reps, average=True, **kwargs):
                 plt.colorbar(plt.cm.ScalarMappable(cmap='viridis'), ax=ax, label='Weights')
                 plt.grid(True)
                 plt.show()
+
+
+def weight_heatmap(config, results, n_reps, average=True, timesteps=None, **kwargs):
+    timesteps = [-1,] if timesteps is None else timesteps
+    for env_dic in config['environment_params']:
+        if env_dic['model'] == 'GridWorld':
+            for mod_dic in config['model_params']:
+                for t in timesteps:
+                    weights = results[env_dic['name']][mod_dic['name']][0]['weights']
+                    for key in weights.keys():
+                        array = weights[key][...,t]
+                        if len(array.shape) == 1:
+                            raise NotImplementedError
+                        if len(array.shape) == 2:
+                            domain = array.shape
+                            value_counts = np.zeros(domain)
+                            for n in range(n_reps):
+                                value_counts += results[env_dic['name']][mod_dic['name']][n]['weights'][key][...,t] / n_reps
+                            plt.title(f'Average {key} weights on timestep {t} by {mod_dic["name"]} in {env_dic["name"]}')
+                            for i in range(value_counts.shape[0]):
+                                for j in range(value_counts.shape[1]):
+                                    if env_dic['obstacles'] is None or (i, j) not in env_dic['obstacles']:
+                                        plt.text(j, i, f'{np.round(value_counts[i, j],decimals=2)}', ha='center', va='center', color='w')
+                            for loc in env_dic['terminal_states']:
+                                if loc in env_dic['success_terminals']:
+                                    circle = plt.Circle((loc[1], loc[0]), 0.5, color='green', fill=False)
+                                else:
+                                    circle = plt.Circle((loc[1], loc[0]), 0.5, color='red', fill=False)
+                                plt.gca().add_patch(circle)
+                            if env_dic['obstacles'] is not None:
+                                for loc in env_dic['obstacles']:
+                                    square = plt.Rectangle((loc[1] - 0.5, loc[0] - 0.5), 1.0, 1.0, color='gray', fill=True)
+                                    plt.gca().add_patch(square)
+                            plt.imshow(value_counts, cmap='viridis', interpolation='nearest')
+                            plt.colorbar()
+                            plt.show()
+                        elif len(array.shape) == 3:
+                            fig, ax = plt.subplots()
+                            domain = env_dic['state_space']
+                            sa_counts = np.zeros(array.shape)
+                            for n in range(n_reps):
+                                sa_counts += results[env_dic['name']][mod_dic['name']][n]['weights'][key][...,t] / n_reps
+                            plt.title(f'Average {key} weights timestep {t} by {mod_dic["name"]} in {env_dic["name"]}')
+                            for i in range(sa_counts.shape[0]):
+                                for j in range(sa_counts.shape[1]):
+                                    square_triangles = get_square_triangles(j, domain[0] - i - 1, 1)
+                                    for k, triangle_coords in enumerate(square_triangles):
+                                        k_i = (((k + 1) % 2) / 3) * ((-1) ** (k // 2))
+                                        k_j = ((k % 2) / 3) * ((-1) ** (k // 2))
+                                        if (domain[0] - i - 1, j) not in env_dic['terminal_states'] and \
+                                                (env_dic['obstacles'] is None or (domain[0] - i - 1, j) not in env_dic[
+                                                    'obstacles']):
+                                            plt.text(j + k_j + 0.5, domain[0] - (i + k_i + 0.5),
+                                                     f'{np.round(sa_counts[i, j, k],decimals=2)}', ha='center', va='center', color='w')
+                                            triangle = Polygon(triangle_coords, closed=True,
+                                                               color=plt.cm.viridis(sa_counts[i, j, k]))
+                                            ax.add_patch(triangle)
+                            for loc in env_dic['terminal_states']:
+                                square = plt.Rectangle((loc[1], domain[0] - loc[0] - 1), 1.0, 1.0, color='black', fill=True)
+                                plt.gca().add_patch(square)
+                                if loc in env_dic['success_terminals']:
+                                    circle = plt.Circle(((loc[1] + 0.5), domain[0] - loc[0] - 0.5), 0.5, color='green',
+                                                        fill=False)
+                                else:
+                                    circle = plt.Circle((loc[1] + 0.5, domain[0] - loc[0] - 0.5), 0.5, color='red',
+                                                        fill=False)
+                                plt.gca().add_patch(circle)
+                                plt.text((loc[1] + 0.5), domain[0] - loc[0] - 0.5,
+                                         f'{np.round(env_dic["terminal_states"][loc],decimals=2)}', ha='center', va='center', color='w')
+                            if env_dic['obstacles'] is not None:
+                                for loc in env_dic['obstacles']:
+                                    square = plt.Rectangle((loc[1], domain[0] - loc[0] - 1), 1.0, 1.0, color='gray',
+                                                           fill=True)
+                                    plt.gca().add_patch(square)
+                            # Adjusting plot
+                            ax.set_xlim(0, domain[1])
+                            ax.set_ylim(0, domain[0])
+                            ax.set_aspect('equal', adjustable='box')
+                            ax.set_xticks(np.arange(domain[1]))
+                            ax.set_yticks(np.arange(domain[0]))
+                            plt.colorbar(plt.cm.ScalarMappable(cmap='viridis'), ax=ax, label='Weights')
+                            plt.grid(True)
+                            plt.show()
+                        else:
+                            raise NotImplementedError
 
 
 def plot_trends(config, results, n_reps, **kwargs):
@@ -156,7 +243,7 @@ def plot_trends(config, results, n_reps, **kwargs):
             avg_cum = None
             for mod_dic in config['model_params']:
                 if 'rho' in mod_dic.keys():
-                    avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['rolling']),))
+                    avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['rho']),))
                     for n in range(n_reps):
                         avg_cum += results[env_dic['name']][mod_dic['name']][n]['rho']
                     avg_cum = avg_cum / n_reps

@@ -3,13 +3,13 @@ from models.model_config import *
 
 environments = [
     # bandit_task_,
-    grid_world_large_sparse
+    grid_world_small_sparse
 ]
 
 models = [
     # actor_critic_,
-    opal_plus_,
-    # opal_star_,
+    #opal_plus_,
+    opal_star_,
     # opal_star_qs_,
     # opal_star_var_,
     # q_learning_
@@ -30,6 +30,10 @@ config_ = {
         'action_heatmap': {
             'average': True
         },
+        'weight_heatmap': {
+            'average': True,
+            'timesteps': [100, 1000, 4000]
+        },
         'learning_rates': {
             'average': True
         },
@@ -39,8 +43,8 @@ config_ = {
             'rho': True
         }
     },
-    "epochs": 6000,
-    "n_reps": 3,
+    "epochs": 5000,
+    "n_reps": 75,
     "environment_params": environments,
     "model_params": models,
     "seed": range(200)

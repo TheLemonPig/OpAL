@@ -26,7 +26,7 @@ def success_metrics(config, results, n_reps, average=True, verbose=True, test_ra
                             n_success += location_counts[terminal]
                         else:
                             n_failures += location_counts[terminal]
-                    n_attempts = n_success + n_failures
+                    n_attempts = n_success + n_failures + 1
                     if verbose:
                         print(f'{mod_dic["name"]} success rate: {np.round(n_success/n_attempts*100, 2)}%')
                     success_rate = np.round(n_success/n_attempts*100, 2)
