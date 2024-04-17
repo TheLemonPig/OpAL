@@ -24,7 +24,6 @@ class GridWorld(BaseEnvironment):
             self.model_state = new_state
         else:
             new_state = self.model_state
-            x=0
         reward = self.sample(new_state)
         return new_state, reward
 
