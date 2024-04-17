@@ -6,7 +6,7 @@ from utils import location_counter, action_counter
 
 def state_heatmap(simulator, results, n_reps, average=True, **kwargs):
     for env_dic in simulator.environments:
-        if env_dic['name'] == 'GridWorld':
+        if env_dic['model'] == 'GridWorld':
             for mod_dic in simulator.models:
                 domain = env_dic['state_space']
                 if average:
@@ -15,16 +15,21 @@ def state_heatmap(simulator, results, n_reps, average=True, **kwargs):
                         state_list = results[env_dic['name']][mod_dic['name']][n]['states']
                         n_attempts = sum(results[env_dic['name']][mod_dic['name']][n]['attempts'])
                         location_counts += location_counter(state_list, domain) / (n_reps * n_attempts)
-                    plt.title(f'Average visitations per trial by {mod_dic["name"]}')
+                    plt.title(f'Average visitations per trial by {mod_dic["name"]} in {env_dic["name"]}')
                     for i in range(location_counts.shape[0]):
                         for j in range(location_counts.shape[1]):
-                            plt.text(j, i, f'{location_counts[i, j]:.2f}', ha='center', va='center', color='w')
+                            if env_dic['obstacles'] is None or (i, j) not in env_dic['obstacles']:
+                                plt.text(j, i, f'{location_counts[i, j]:.2f}', ha='center', va='center', color='w')
                     for loc in env_dic['terminal_states']:
                         if loc in env_dic['success_terminals']:
                             circle = plt.Circle((loc[1], loc[0]), 0.5, color='green', fill=False)
                         else:
                             circle = plt.Circle((loc[1], loc[0]), 0.5, color='red', fill=False)
                         plt.gca().add_patch(circle)
+                    if env_dic['obstacles'] is not None:
+                        for loc in env_dic['obstacles']:
+                            square = plt.Rectangle((loc[1]-0.5, loc[0]-0.5), 1.0, 1.0, color='gray', fill=True)
+                            plt.gca().add_patch(square)
                     plt.imshow(location_counts, cmap='viridis', interpolation='nearest')
                     plt.colorbar()
                     plt.show()
@@ -52,7 +57,7 @@ def state_heatmap(simulator, results, n_reps, average=True, **kwargs):
                     # plt.imshow(location_counts, cmap='viridis', interpolation='nearest')
                     # plt.colorbar()
                     # plt.show()
-        elif env_dic['name'] == 'BanditTask':
+        elif env_dic['model'] == 'BanditTask':
             for mod_dic in simulator.models:
                 if average:
                     action_space = (len(env_dic['interactions']),)
@@ -79,8 +84,8 @@ def plot_trends(simulator, results, n_reps, **kwargs):
                     avg_cum += results[env_dic['name']][mod_dic['name']][n]['cumulative']
                 avg_cum = avg_cum / n_reps
                 plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']} in {env_dic['name']}")
-        plt.legend()
-        plt.show()
+            plt.legend()
+            plt.show()
     if kwargs['rolling']:
         roll = 100
         for env_dic in simulator.environments:
@@ -90,9 +95,25 @@ def plot_trends(simulator, results, n_reps, **kwargs):
                     avg_cum += results[env_dic['name']][mod_dic['name']][n]['rolling']
                 avg_cum = avg_cum / n_reps
                 plt.plot(np.arange(len(avg_cum[roll:])), avg_cum[roll:], label=f"{mod_dic['name']} in {env_dic['name']}")
-        plt.legend()
-        plt.title('Rolling Average Reward')
-        plt.show()
+            plt.legend()
+            plt.title('Rolling Average Reward')
+            plt.show()
+    if kwargs['rho']:
+        for env_dic in simulator.environments:
+            avg_cum = None
+            for mod_dic in simulator.models:
+                if 'rho' in mod_dic.keys():
+                    avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['rolling']),))
+                    for n in range(n_reps):
+                        avg_cum += results[env_dic['name']][mod_dic['name']][n]['rho']
+                    avg_cum = avg_cum / n_reps
+                    plt.xlabel('epochs')
+                    plt.ylabel('rho')
+                    plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']} in {env_dic['name']}")
+            if avg_cum is not None:
+                plt.legend()
+                plt.title('Rho Value over Training')
+                plt.show()
 
 
 

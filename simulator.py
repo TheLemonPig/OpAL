@@ -40,7 +40,6 @@ class Simulator:
         results['attempts'] = []
         results['cumulative'] = []
         results['rolling'] = []
-        results['rho'] = []
         n_steps = 0
         # for n in tqdm(range(steps)):
         for n in range(steps):
@@ -49,8 +48,6 @@ class Simulator:
             action = model.act()
             new_state, reward = environment.interact(action)
             model.update(new_state, action, reward)
-            if model.name == 'OpALStar':
-                results['rho'].append(model.rho)
             results['states'].append(new_state)
             results['actions'].append(action)
             results['rewards'].append(reward)

@@ -11,7 +11,7 @@ class QLearning(BaseRL):
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
-        self.qs = np.ones(state_space+action_space) * 0.5
+        self.qs = np.ones(state_space+action_space) * 1.0
 
     def act(self):
         p_values = safe_softmax(self.qs[self.state]*self.beta)

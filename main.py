@@ -6,9 +6,9 @@ import numpy as np
 from itertools import product
 
 
-def verbose_helper(simulator, results, n_reps, **kwargs):
+def verbose_helper(config, results, n_reps, **kwargs):
     if 'success_metrics' in kwargs:
-        return success_metrics(simulator, results, n_reps, **kwargs['success_metrics'])
+        return success_metrics(config, results, n_reps, **kwargs['success_metrics'])
 
 
 def plot_helper(simulator, results, n_reps, **kwargs):
@@ -30,7 +30,7 @@ def main(config):
     if config['verbose']:
         res = verbose_helper(config, results, config['n_reps'], **config['verbose_params'])
     if config['plot']:
-        plot_helper(config, results, config['n_reps'], **config['plot_params'])
+        plot_helper(simulator, results, config['n_reps'], **config['plot_params'])
     return res
 
 
