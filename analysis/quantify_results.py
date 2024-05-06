@@ -3,7 +3,7 @@ import numpy as np
 from utils import location_counter, action_counter
 
 
-def success_metrics(config, results, n_reps, average=True, verbose=True, test_ratio=0, **kwargs):
+def success_metrics(config, results, n_reps, average=True, verbose=True, test_ratio=0.1, **kwargs):
     success_rates = []
     for env_dic in config['environment_params']:
         if env_dic['model'] == 'GridWorld':

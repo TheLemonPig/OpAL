@@ -5,11 +5,11 @@ import numpy as np
 class GridWorld(BaseEnvironment):
 
     def __init__(self, interactions, state_space, start_state, deterministic=True, terminal_states=None, obstacles=None,
-                 non_terminal_loss=0, name=None, max_steps=300, **kwargs):
+                 non_terminal_penalty=0, name=None, max_steps=300, **kwargs):
         BaseEnvironment.__init__(self, interactions=interactions, state_space=state_space,
                                  start_state=start_state, name=name)
-        self.world_array = np.ones(state_space) * non_terminal_loss
-        self.non_terminal_loss = non_terminal_loss
+        self.world_array = np.ones(state_space) * non_terminal_penalty
+        self.non_terminal_penalty = non_terminal_penalty
         for terminal_location in terminal_states.keys():
             self.world_array[terminal_location] = terminal_states[terminal_location]
         self.terminal_states = terminal_states

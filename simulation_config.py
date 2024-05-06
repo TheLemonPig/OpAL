@@ -3,9 +3,9 @@ from models.model_config import *
 
 environments = [
     bandit_task_large_sparse,
-    bandit_task_small_rich
-    # grid_world_small_sparse,
-    # grid_world_small_rich
+    bandit_task_small_rich,
+    # grid_world_small_rich,
+    # grid_world_small_sparse
 ]
 
 models = [
@@ -29,11 +29,15 @@ config_ = {
             'average': True
         },
         'action_heatmap': {
-            'average': True
+            'average': True,
         },
         'weight_heatmap': {
             'average': True,
-            'timesteps': [100,999]
+            'timesteps': [-1]
+        },
+        'policy_heatmap': {
+            'average': True,
+            'timesteps': [-1]
         },
         'learning_rates': {
             'average': True
@@ -41,9 +45,14 @@ config_ = {
         'trends': {
             'cumulative': True,
             'rolling': True,
-            'rho': True
+            'rho': True,
+            'anneal': True,
+            'weights': True,
+            'probabilities': True,
+            'success_probability': True
         }
     },
+    "thin": 1,
     "epochs": 1000,
     "n_reps": 1000,
     "environment_params": environments,

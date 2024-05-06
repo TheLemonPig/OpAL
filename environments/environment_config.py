@@ -10,6 +10,7 @@ bandit_task_large_sparse = {
     "success_actions": [0],
     "interactions": [0, 1, 2, 3, 4]
 }
+
 bandit_task_small_rich = {
     "name": 'BanditTaskSmallRich',
     "model": 'BanditTask',
@@ -20,6 +21,7 @@ bandit_task_small_rich = {
     "success_actions": [0],
     "interactions": [0, 1]
 }
+
 grid_world_small_sparse = {
     "name": 'GridWorldSmallSparse',
     "model": 'GridWorld',
