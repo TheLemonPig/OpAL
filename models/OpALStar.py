@@ -97,6 +97,16 @@ class OpALStar(BaseRL):
     def get_weights(self):
         return {"vs": self.vs, "gs": self.gs, "ns": self.ns}
 
+    def get_probabilities(self):
+        beta_g = self.beta * np.max([0, (1 + self.rho)])
+        beta_n = self.beta * np.max([0, (1 - self.rho)])
+        net = beta_g * self.gs - beta_n * self.ns
+        if self.anneal_method == 'qs':
+            w = 1 / (1 + np.mean(abs(net)))
+            net = net * (1 - w) + self.qs[self.state] * w
+        p_values = safe_softmax(net)
+        return p_values
+
     def get_optimal_policy(self):
         # This is out of date
         return (self.gs - self.ns).argmax(axis=-1)
@@ -119,3 +129,8 @@ class OpALStar(BaseRL):
         else:
             raise ValueError
         return p_values
+
+    def reinitialize_weights(self):
+        self.qs = np.ones_like(self.qs) * 0.5
+        self.gs = np.ones_like(self.gs)
+        self.ns = np.ones_like(self.ns)

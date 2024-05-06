@@ -5,6 +5,7 @@ from typing import Dict
 
 from models import model_library
 from environments import environment_library
+from typing import Dict
 
 
 class Simulator:
@@ -89,4 +90,19 @@ class Simulator:
         return {env.name:
                 {model.name: model.get_predictions() for model in self.models}
                 for env in self.environments}
+
+    def update_model_parameters(self, param_dict):
+        for model_params in self.models:
+            if 'model' in model_params and 'model' in param_dict.keys():
+                if model_params['model'] != param_dict['model']:
+                    break
+            elif 'name' in model_params and 'name' in param_dict.keys():
+                if model_params['name'] != param_dict['name']:
+                    break
+            elif 'model' in param_dict.keys() or 'name' in param_dict.keys():
+                raise UserWarning('Model dictionaries supplied to simulator lack name/model specifiers')
+            # for param in param_dict:
+            #     if param not in model_params:
+            #         raise UserWarning('New parameters are being added to model dictionaries')
+            model_params.update(param_dict)
 

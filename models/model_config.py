@@ -6,7 +6,6 @@ actor_critic_ = {
     "alpha": 0.1,
     "beta": 1.0,
     "gamma": 0.0,
-    "gamma": 0.0,
 }
 
 q_learning_ = {
@@ -24,6 +23,7 @@ opal_star_ = {
     "alpha_n": 0.95,
     "alpha_c": 0.1,
     "beta": 1.0,
+    "gamma": 0.0,
     "gamma": 0.0,
     "rho": 0,
     "phi": 1.0,
