@@ -1,15 +1,27 @@
 # Environment Configs
 
-bandit_task_ = {
-    "name": 'BanditTask',
+bandit_task_large_sparse = {
+    "name": 'BanditTaskLargeSparse',
     "model": 'BanditTask',
     "state_space": (1,),
     "start_state": (0,),
     "deterministic": False,
-    "ps": [0.2, 0.3, 0.1, 0.2],
-    "success_actions": [1],
+    "ps": [0.3, 0.2, 0.2, 0.2, 0.2],
+    "success_actions": [0],
+    "interactions": [0, 1, 2, 3, 4]
+}
+
+bandit_task_small_rich = {
+    "name": 'BanditTaskSmallRich',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "ps": [0.8, 0.7],
+    "success_actions": [0],
     "interactions": [0, 1]
 }
+
 grid_world_small_sparse = {
     "name": 'GridWorldSmallSparse',
     "model": 'GridWorld',

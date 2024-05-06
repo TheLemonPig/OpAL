@@ -2,13 +2,15 @@ from environments.environment_config import *
 from models.model_config import *
 
 environments = [
-    # bandit_task_,
-    grid_world_small_sparse
+    bandit_task_large_sparse,
+    bandit_task_small_rich,
+    # grid_world_small_rich,
+    # grid_world_small_sparse
 ]
 
 models = [
     # actor_critic_,
-    #opal_plus_,
+    opal_plus_,
     opal_star_,
     # opal_star_qs_,
     # opal_star_var_,
@@ -28,11 +30,15 @@ config_ = {
             'average': True
         },
         'action_heatmap': {
-            'average': True
+            'average': True,
         },
         'weight_heatmap': {
             'average': True,
-            'timesteps': [100, 1000, 4000]
+            'timesteps': [-1]
+        },
+        'policy_heatmap': {
+            'average': True,
+            'timesteps': [-1]
         },
         'learning_rates': {
             'average': True
@@ -40,12 +46,17 @@ config_ = {
         'trends': {
             'cumulative': True,
             'rolling': True,
-            'rho': True
+            'rho': True,
+            'anneal': True,
+            'weights': True,
+            'probabilities': True,
+            'success_probability': True
         }
     },
-    "epochs": 5000,
-    "n_reps": 75,
+    "thin": 1,
+    "epochs": 1000,
+    "n_reps": 1000,
     "environment_params": environments,
     "model_params": models,
-    "seed": range(200)
+    "seed": range(1000)
 }

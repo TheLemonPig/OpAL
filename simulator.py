@@ -43,6 +43,7 @@ class Simulator:
         results['cumulative'] = []
         results['rolling'] = []
         results['rho'] = []
+        results['anneal'] = []
         results['weights']: Dict[str, np.array] = {k: np.zeros((v.shape + (steps,))) for k, v in
                                                    model.get_weights().items()}
         results['probabilities'] = np.zeros((model.state_space + model.action_space + (steps,)))
@@ -65,6 +66,7 @@ class Simulator:
                 results['rolling'].append(sum(results['rewards'][max(n-roll, 0):n])/(min(roll, n)+1))
                 if model.name.startswith('OpAL'):
                     results['rho'].append(model.rho)
+                    results['anneal'].append(model.anneal)
                 for k, v in model.get_weights().items():
                     results['weights'][k][..., n] = v
                 results['probabilities'][..., n] = model.get_probabilities()

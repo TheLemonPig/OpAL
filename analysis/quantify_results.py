@@ -3,7 +3,7 @@ import numpy as np
 from utils import location_counter, action_counter
 
 
-def success_metrics(config, results, n_reps, average=True, verbose=True, test_ratio=0, **kwargs):
+def success_metrics(config, results, n_reps, average=True, verbose=True, test_ratio=0.1, **kwargs):
     success_rates = []
     for env_dic in config['environment_params']:
         if env_dic['model'] == 'GridWorld':
@@ -14,7 +14,7 @@ def success_metrics(config, results, n_reps, average=True, verbose=True, test_ra
                 if average:
                     location_counts = np.zeros(domain)
                     for n in range(n_reps):
-                        state_list = results[env_dic['name']][mod_dic['name']][n]['states']
+                        state_list = results[env_dic['name']][mod_dic['name']][n]['new_states']
                         if test_ratio > 0:
                             n_epochs = config['epochs']
                             state_list = state_list[-int(n_epochs*test_ratio):]
@@ -32,7 +32,7 @@ def success_metrics(config, results, n_reps, average=True, verbose=True, test_ra
                     success_rate = np.round(n_success/n_attempts*100, 2)
                     success_rates.append(success_rate)
         elif env_dic['model'] == 'BanditTask':
-            for mod_dic in onfig['model_params']:
+            for mod_dic in config['model_params']:
                 success_actions = env_dic['success_actions']
                 action_space = (len(env_dic['interactions']),)
                 (n_actions, ) = action_space

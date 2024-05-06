@@ -37,9 +37,9 @@ class OpALPlus(BaseRL):
         beta_g = self.beta*np.max([0, (1+self.rho)])
         beta_n = self.beta*np.max([0, (1-self.rho)])
         net = beta_g * self.gs[self.state] - beta_n * self.ns[self.state]
-        if self.anneal_method == 'qs':
-            w = 1/(1+np.mean(abs(net)))
-            net = net * (1-w) + self.vs[self.state] * w
+        # if self.anneal_method == 'qs':
+        #     w = 1/(1+np.mean(abs(net)))
+        #     net = net * (1-w) + self.vs[self.state] * w
         p_values = safe_softmax(net)
         action = np.random.choice(len(p_values), 1, p=p_values).item()
         self.action = action
@@ -54,12 +54,11 @@ class OpALPlus(BaseRL):
         self.state = new_state
 
     def update_metacritic(self, reward):
-        self.eta_c += reward - self.l_mag
-        self.gamma_c += self.r_mag - reward
+        # TODO: Build into code that agent knows if it is a terminal
+        if not reward == -0.04:
+            self.eta_c += reward - self.l_mag
+            self.gamma_c += self.r_mag - reward
         mean, var = beta_dist.stats(self.eta_c, self.gamma_c, moments='mv')
-        std = np.sqrt(var)
-        S = int(mean - self.phi * std > 0.5 or mean + self.phi * std < 0.5)
-        # self.rho = S * (mean - 0.5) * self.k
         if self.anneal_method == 'variance':
             self.anneal = 1/(1+1/(self.T*var))
         elif self.anneal_method == 'visitation':
@@ -102,8 +101,18 @@ class OpALPlus(BaseRL):
         beta_g = self.beta * np.max([0, (1 + self.rho)])
         beta_n = self.beta * np.max([0, (1 - self.rho)])
         net = beta_g * self.gs - beta_n * self.ns
-        if self.anneal_method == 'qs':
-            w = 1 / (1 + np.mean(abs(net)))
-            net = net * (1 - w) + self.vs[self.state] * w
-        p_values = safe_softmax(net)
+        # if self.anneal_method == 'qs':
+        #     w = 1 / (1 + np.mean(abs(net)))
+        #     net = net * (1 - w) + self.vs[self.state] * w
+        p_values = np.zeros_like(net)
+        if len(self.state_space) == 2:
+            for i in range(self.state_space[0]):
+                for j in range(self.state_space[1]):
+                    p_values[i, j] = safe_softmax(net[i, j])
+        elif len(self.state_space) == 1:
+            for i in range(self.state_space[0]):
+                p_values[i] = safe_softmax(net[i])
+        else:
+            raise ValueError
+
         return p_values

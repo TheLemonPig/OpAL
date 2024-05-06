@@ -3,9 +3,9 @@
 actor_critic_ = {
     "name": 'ActorCritic',
     "model": 'ActorCritic',
-    "alpha": 0.7,
+    "alpha": 0.1,
     "beta": 1.0,
-    "gamma": 0.98,
+    "gamma": 0.0,
 }
 
 q_learning_ = {
@@ -19,33 +19,33 @@ q_learning_ = {
 opal_star_ = {
     "name": 'OpAL*',
     "model": 'OpALStar',
-    "alpha_g": 0.3,
-    "alpha_n": 0.3,
-    "alpha_c": 0.7,
-    "beta": 3.0,
-    "gamma": 0.97,
+    "alpha_g": 0.95,
+    "alpha_n": 0.95,
+    "alpha_c": 0.1,
+    "beta": 1.0,
+    "gamma": 0.0,
     "rho": 0,
-    "phi": 1.7,
-    "k": 5.0,
-    "T": 50000.0,
-    "R_mag": 1.0,
-    "L_mag": -0.04,
+    "phi": 1.0,
+    "k": 20,
+    "T": 100.0,
+    "r_mag": 1.0,
+    "l_mag": 0,
     "anneal_method": 'variance'
 }
 
 opal_plus_ = {
     "name": 'OpAL+',
     "model": 'OpALPlus',
-    "alpha_g": 0.4,
-    "alpha_n": 0.6,
-    "alpha_c": 0.6,
-    "beta": 2.0,
-    "gamma": 0.98,
+    "alpha_g": 0.95,
+    "alpha_n": 0.95,
+    "alpha_c": 0.1,
+    "beta": 2.5,
+    "gamma": 0.0,
     "rho": 0,
-    "phi": 1.7,
-    "k": 5.0,
-    "T": 50000.0,
-    "R_mag": 1.0,
-    "L_mag": -0.04,
+    "phi": 1.0,
+    "k": 20,
+    "T": 100.0,
+    "r_mag": 1.0,
+    "l_mag": 0,
     "anneal_method": 'variance'
 }
