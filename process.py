@@ -8,22 +8,23 @@ from analysis.quantify_results import success_metrics
 
 from_csv = True
 opal_data = True
-using_tests = False
+
+# preprefix = 'Test_'
+# preprefix = 'Success_'
+preprefix = 'Test_'
 
 if opal_data:
     prefix = 'OpAL_'
-    cols = 'OpALPlus/GridWorldSmallSparse,OpALPlus/GridWorldSmallRich,OpALPlus/GridWorldLargeSparse,OpALPlus/GridWorldLargeRich,OpALStar/GridWorldSmallSparse,OpALStar/GridWorldSmallRich,OpALStar/GridWorldLargeSparse,OpALStar/GridWorldLargeRich'.split(',')
+    #cols = 'OpALPlus/GridWorldSmallSparse,OpALPlus/GridWorldSmallRich,OpALPlus/GridWorldLargeSparse,OpALPlus/GridWorldLargeRich,OpALStar/GridWorldSmallSparse,OpALStar/GridWorldSmallRich,OpALStar/GridWorldLargeSparse,OpALStar/GridWorldLargeRich'.split(',')
 else:
     prefix = ''
-    cols = 'ActorCritic/GridWorldSmallSparse,ActorCritic/GridWorldSmallRich,ActorCritic/GridWorldLargeSparse,ActorCritic/GridWorldLargeRich,QLearning/GridWorldSmallSparse,QLearning/GridWorldSmallRich,QLearning/GridWorldLargeSparse,QLearning/GridWorldLargeRich'.split(',')
-
-if using_tests:
-    preprefix = 'Test_'
-else:
-    preprefix = 'Success_'
+    #cols = 'ActorCritic/GridWorldSmallSparse,ActorCritic/GridWorldSmallRich,ActorCritic/GridWorldLargeSparse,ActorCritic/GridWorldLargeRich,QLearning/GridWorldSmallSparse,QLearning/GridWorldSmallRich,QLearning/GridWorldLargeSparse,QLearning/GridWorldLargeRich'.split(',')
 
 if from_csv:
-    file_prefix = f'{prefix}{preprefix}Rates_'
+    if preprefix.startswith('AUC'):
+        file_prefix = f'{prefix}{preprefix}'
+    else:
+        file_prefix = f'{prefix}{preprefix}Rates_'
 else:
     file_prefix = f'{prefix}Results_'
 
@@ -65,7 +66,13 @@ for file in os.listdir(data_path):
 with open(config_path, 'rb') as f:
     config = pickle.load(f)
 hyperparams = config['hyperparams']
-lists_of_hyperparams = {k: np.round(np.arange(*v),decimals=5) for k, v in hyperparams.items()}
+lists_of_hyperparams = dict()
+for k,v in hyperparams.items():
+        if type(v) == tuple:
+            sublist = np.arange(*v)
+        elif type(v) == list:
+            sublist = v
+        lists_of_hyperparams.update({k: np.round(sublist,decimals=5)})
 param_permutations = list(product(*lists_of_hyperparams.values()))
 # assert len(results) == len(param_permutations)
 n_permutations = len(param_permutations)
@@ -76,6 +83,7 @@ n_contexts = n_models * n_envs
 success_rates = np.zeros((n_models,n_envs,n_permutations)) #.transpose((1,0,2))
 success_rates_list = []
 df_index = []
+cols = None
 if from_csv:
     for file in os.listdir(data_folder):
         if file.startswith(f'{prefix}{preprefix}') and not file.endswith('Compiled.csv'):
@@ -83,6 +91,10 @@ if from_csv:
 
             filepath = os.path.join(data_folder,file)
             results = pd.read_csv(filepath)
+            if cols is None:
+                cols = results.columns
+            else:
+                assert (cols == results.columns).all(), "Column Mismatch -- Probably some slurm tasks did not finish in time"
             np_results += np.nan_to_num(results.to_numpy()) / (max_seed_value+1)
             success_rates += np.nan_to_num(results.to_numpy()).reshape((1,-1)).reshape((n_models,n_envs,n_permutations), order='f')/ (max_seed_value+1)# .transpose((1,0,2)) / (max_seed_value+1)
             #print(np.nan_to_num(results.to_numpy())[0])
@@ -133,7 +145,7 @@ if from_csv:
     # np.savetxt(path,success_array,delimiter=',')
     df_results.to_csv(path)
 
-print(df_results.fillna(0).max(axis=0))
+# print(df_results.fillna(0).max(axis=0))
 
 # df = pd.DataFrame(all_results)
 

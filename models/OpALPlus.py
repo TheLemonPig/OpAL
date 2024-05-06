@@ -7,7 +7,7 @@ from scipy.stats import beta as beta_dist
 
 class OpALPlus(BaseRL):
 
-    def __init__(self, action_space, state_space, start_state, alpha_c, alpha_g, alpha_n, beta, gamma, rho, phi, k,
+    def __init__(self, action_space, state_space, start_state, alpha_c, alpha_g, alpha_n, beta, gamma, rho,
                  r_mag=1, l_mag=-1, T=100, anneal_method='variance', name=None, **kwargs):
         BaseRL.__init__(self, action_space=action_space, state_space=state_space, start_state=start_state, name=name)
         self.alpha_c = alpha_c
@@ -16,8 +16,6 @@ class OpALPlus(BaseRL):
         self.beta = beta
         self.gamma = gamma
         self.rho = rho
-        self.phi = phi
-        self.k = k
         self.T = T
         self.anneal_method = anneal_method
         self.visitation_counter = np.zeros(state_space+action_space)
@@ -54,11 +52,12 @@ class OpALPlus(BaseRL):
         self.state = new_state
 
     def update_metacritic(self, reward):
-        self.eta_c += reward - self.l_mag
-        self.gamma_c += self.r_mag - reward
+        if not reward == -0.04:
+            self.eta_c += reward - self.l_mag
+            self.gamma_c += self.r_mag - reward
         mean, var = beta_dist.stats(self.eta_c, self.gamma_c, moments='mv')
         std = np.sqrt(var)
-        S = int(mean - self.phi * std > 0.5 or mean + self.phi * std < 0.5)
+        # S = int(mean - self.phi * std > 0.5 or mean + self.phi * std < 0.5)
         # self.rho = S * (mean - 0.5) * self.k
         if self.anneal_method == 'variance':
             self.anneal = 1/(1+1/(self.T*var))

@@ -53,9 +53,10 @@ class OpALStar(BaseRL):
         self.state = new_state
 
     def update_metacritic(self, reward):
-        self.eta_c += reward - self.l_mag
-        self.gamma_c += self.r_mag - reward
-        mean, var = beta_dist.stats(self.gamma_c, self.eta_c, moments='mv')
+        if not reward == -0.04:
+            self.eta_c += reward - self.l_mag
+            self.gamma_c += self.r_mag - reward
+        mean, var = beta_dist.stats(self.eta_c,self.gamma_c, moments='mv')
         std = np.sqrt(var)
         S = int(mean - self.phi * std > 0.5 or mean + self.phi * std < 0.5)
         self.rho = S * (mean - 0.5) * self.k

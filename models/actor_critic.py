@@ -39,3 +39,6 @@ class ActorCritic(BaseRL):
 
     def get_optimal_policy(self):
         return self.ps.argmax(axis=-1)
+
+    def get_probabilities(self):
+        return safe_softmax(self.ps[self.state] * self.beta)
