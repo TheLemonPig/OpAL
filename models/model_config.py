@@ -33,6 +33,24 @@ opal_star_ = {
     "anneal_method": 'variance'
 }
 
+opal_star_qs_ = {
+    "name": 'OpAL*Qs',
+    "model": 'OpALStar',
+    "alpha_g": 0.95,
+    "alpha_n": 0.95,
+    "alpha_c": 0.1,
+    "beta": 1.0,
+    "gamma": 0.0,
+    "rho": 0,
+    "phi": 1.0,
+    "k": 20,
+    "T": 100.0,
+    "r_mag": 1.0,
+    "l_mag": 0,
+    "anneal_method": 'qs'
+}
+
+
 opal_plus_ = {
     "name": 'OpAL+',
     "model": 'OpALPlus',

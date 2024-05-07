@@ -10,3 +10,7 @@ Logs/*.pkl
 *.out
 *.err
 *.pkl
+
+*.pycache
+*.DS_Store
+*.vscode

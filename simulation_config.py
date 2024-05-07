@@ -2,15 +2,16 @@ from environments.environment_config import *
 from models.model_config import *
 
 environments = [
-    bandit_task_large_sparse,
-    bandit_task_small_rich,
+    bandit_task_small_sparse,
+    #bandit_task_large_sparse,
+    #bandit_task_small_rich,
     # grid_world_small_rich,
     # grid_world_small_sparse
 ]
 
 models = [
     # actor_critic_,
-    opal_plus_,
+    # opal_star_qs_,
     opal_star_,
     # opal_star_qs_,
     # opal_star_var_,
@@ -18,8 +19,8 @@ models = [
 ]
 
 config_ = {
-    "verbose": True,
-    "plot": True,
+    "verbose": False,
+    "plot": False,
     "verbose_params": {
         'success_metrics': {
             'average': True
@@ -54,8 +55,8 @@ config_ = {
         }
     },
     "thin": 1,
-    "epochs": 1000,
-    "n_reps": 1000,
+    "epochs": 250,
+    "n_reps": 1,
     "environment_params": environments,
     "model_params": models,
     "seed": range(1000)

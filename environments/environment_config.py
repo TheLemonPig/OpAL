@@ -11,6 +11,17 @@ bandit_task_large_sparse = {
     "interactions": [0, 1, 2, 3, 4]
 }
 
+bandit_task_small_sparse = {
+    "name": 'BanditTaskLargeSparse',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "ps": [0.3, 0.2],
+    "success_actions": [0],
+    "interactions": [0, 1]
+}
+
 bandit_task_small_rich = {
     "name": 'BanditTaskSmallRich',
     "model": 'BanditTask',
