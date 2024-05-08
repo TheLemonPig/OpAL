@@ -18,7 +18,6 @@ models/__pycache__/
 analysis/__pycache__/
 .idea/
 __pycache__/
-*.__pycache__
 
 *.DS_Store
 *.vscode
