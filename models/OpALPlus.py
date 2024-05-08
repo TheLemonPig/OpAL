@@ -19,8 +19,7 @@ class OpALPlus(BaseRL):
         self.T = T
         self.anneal_method = anneal_method
         self.visitation_counter = np.zeros(state_space+action_space)
-        self.vs = np.ones(state_space) * 0.5
-        # self.qs = np.ones(state_space + action_space) * 0.5
+        self.qs = np.ones(action_space) * 0.5
         self.gs = np.ones(state_space+action_space) * 1.0
         self.ns = np.ones(state_space+action_space) * 1.0
         self.eta_c = 1
@@ -29,6 +28,9 @@ class OpALPlus(BaseRL):
         self.r_mag = r_mag
         self.l_mag = l_mag
         self.action = None
+        if self.anneal_method == 'variance' or self.anneal_method == 'qs':
+            _, var = beta_dist.stats(self.eta_c, self.gamma_c, moments='mv')
+            self.anneal = 1/(1+1/(self.T*var))
 
     def act(self):
         self.visitation_counter[self.state] += 1
@@ -46,9 +48,9 @@ class OpALPlus(BaseRL):
     # TODO: Put model responsible for restarting task
 
     def update(self, new_state, action, reward):
-        self.update_metacritic(reward)
         delta = self.update_critic(new_state, action, reward)
         self.update_actor(action, delta)
+        self.update_metacritic(reward)
         self.state = new_state
 
     def update_metacritic(self, reward):
@@ -56,7 +58,8 @@ class OpALPlus(BaseRL):
         if not reward == -0.04:
             self.eta_c += reward - self.l_mag
             self.gamma_c += self.r_mag - reward
-        mean, var = beta_dist.stats(self.eta_c, self.gamma_c, moments='mv')
+        n_choices = self.qs.shape[0]
+        mean, var = beta_dist.stats(self.eta_c/n_choices, self.gamma_c/n_choices, moments='mv')
         if self.anneal_method == 'variance':
             self.anneal = 1/(1+1/(self.T*var))
         elif self.anneal_method == 'visitation':
@@ -65,15 +68,15 @@ class OpALPlus(BaseRL):
             self.anneal = 1
 
     def update_critic(self, new_state, action, reward):
-        # States
-        delta = reward - self.vs[self.state] + self.vs[new_state] * self.gamma
-        self.vs[self.state] += self.alpha_c * delta
+        # # States
+        # delta = reward - self.vs[self.state] + self.vs[new_state] * self.gamma
+        # self.vs[self.state] += self.alpha_c * delta
         # # State-actions
         # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
         # self.qs[self.state][action] += self.alpha_c * delta
-        # Actions
-        # delta = reward - self.qs[(0, 0)][action] + self.qs[(0, 0)].max() * self.gamma
-        # self.qs[(0, 0)][action] += self.alpha_c * delta
+        # # Actions
+        delta = reward - self.qs[action] + self.qs.max() * self.gamma
+        self.qs[action] += self.alpha_c * delta
         # # Mix-up
         # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
         # self.qs[self.state] += self.alpha_c * delta
