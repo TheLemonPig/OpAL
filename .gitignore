@@ -13,9 +13,11 @@ Logs/*.pkl
 
 Data/*.csv
 
-environments/*.__pycache__
-models/*.__pycache__
-analysis/*.__pycache__
+environments/__pycache__/
+models/__pycache__/
+analysis/__pycache__/
+.idea/
+__pycache__/
 *.__pycache__
 
 *.DS_Store
