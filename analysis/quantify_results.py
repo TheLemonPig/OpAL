@@ -20,7 +20,7 @@ def success_metrics(config, results, n_reps, average=True, compare=None, verbose
                         for n in range(n_reps):
                             state_list = results[env_dic['name']][mod_dic['name']][n]['new_states']
                             if test_ratio > 1/config['epochs']:
-                            n_epochs = config['epochs']
+                                n_epochs = config['epochs']
                             state_list = state_list[-int(n_epochs*test_ratio):]
                         location_counts += location_counter(state_list, domain)
                         n_success = 0
@@ -33,11 +33,8 @@ def success_metrics(config, results, n_reps, average=True, compare=None, verbose
                         n_attempts = n_success + n_failures + 1
                     if verbose:
                             print(f'{mod_dic["name"]} success rate: {np.round(n_success/n_attempts*100, 2)}%')
-                        success_results.append(np.round(n_success/n_attempts*100, 2))
-                return success_results
-                        success_rate = np.round(n_success/n_attempts*100, 2)
-                    success_rates.append(success_rate)
-        elif env_dic['model'] == 'BanditTask':
+                    success_results.append(np.round(n_success/n_attempts*100, 2))
+            elif env_dic['model'] == 'BanditTask':
                 success_results = []
                 for mod_dic in config['model_params']:
                     success_state_actions = env_dic['success_state_actions']
@@ -61,11 +58,8 @@ def success_metrics(config, results, n_reps, average=True, compare=None, verbose
                                 n_failures += state_action_counts[state_x, state_y][action]
                         n_attempts = n_success + n_failures
                         if verbose:
-                        print(f'{mod_dic["name"]} success rate: {np.round(n_success / n_attempts * 100, 2)}%')
+                            print(f'{mod_dic["name"]} success rate: {np.round(n_success / n_attempts * 100, 2)}%')
                         success_results.append(np.round(n_success / n_attempts * 100, 2))
-                return success_results
-                    success_rate = np.round(n_success / n_attempts * 100, 2)
-                    success_rates.append(success_rate)
     return success_rates
 
 def auc(config, results, n_reps, average=True, verbose=True, **kwargs):

@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 import numpy as np
 from itertools import product
-from itertools import product
 
 from utils import location_counter, action_counter, get_square_triangles, state_action_counter
 

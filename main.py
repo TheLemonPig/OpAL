@@ -39,9 +39,4 @@ def main(config):
 
 
 if __name__ == "__main__":
-    if config_['grid_search']:
-        grid_search(config_, config_['grid_params'])
-    elif config_['compare']:
-        compare(config_, config_['compare_param'])
-    else:
-        run(config_)
+    main(config_)
