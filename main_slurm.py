@@ -87,11 +87,11 @@ def grid_search(config, seed: int):
     df.to_csv(savepath, index=False)
     return n_permutations
 
-# parser = argparse.ArgumentParser("parser")
-# parser.add_argument('--slurm_id', type=int, help='number of slurm array')
-# args = parser.parse_args()
-# rep = args.slurm_id
-rep = 0
+parser = argparse.ArgumentParser("parser")
+parser.add_argument('--slurm_id', type=int, help='number of slurm array')
+args = parser.parse_args()
+rep = args.slurm_id
+# rep = 0
 start = datetime.now()
 n_permutations = grid_search(config_, seed=rep)
 end = datetime.now()

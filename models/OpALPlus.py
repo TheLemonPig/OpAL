@@ -57,9 +57,6 @@ class OpALPlus(BaseRL):
             self.eta_c += reward - self.l_mag
             self.gamma_c += self.r_mag - reward
         mean, var = beta_dist.stats(self.eta_c, self.gamma_c, moments='mv')
-        std = np.sqrt(var)
-        S = int(mean - self.phi * std > 0.5 or mean + self.phi * std < 0.5)
-        # self.rho = S * (mean - 0.5) * self.k
         if self.anneal_method == 'variance':
             self.anneal = 1/(1+1/(self.T*var))
         elif self.anneal_method == 'visitation':
