@@ -11,6 +11,8 @@ Logs/*.pkl
 *.err
 *.pkl
 
+Data/*.csv
+
 *.pycache
 *.DS_Store
 *.vscode
