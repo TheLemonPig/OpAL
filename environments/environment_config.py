@@ -25,8 +25,9 @@ bandit_task_small_sparse = {
 bandit_task_small_rich = {
     "name": 'BanditTaskSmallRich',
     "model": 'BanditTask',
-    "state_space": (1,),
-    "start_state": (0,),
+    # "state_space": (2,),
+    "state_space": (1, 1),
+    "start_state": (0, 0),
     "deterministic": False,
     "ps": [0.8, 0.7],
     "success_actions": [0],

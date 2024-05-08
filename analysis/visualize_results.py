@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 import numpy as np
 from itertools import product
+from itertools import product
 
 from utils import location_counter, action_counter, get_square_triangles, state_action_counter
 
@@ -51,8 +52,8 @@ def state_heatmap(config, results, n_reps, average=True, **kwargs):
                         axs[row, col].set_title(f'Rep {n}')
                         axs[row, col].legend()
 
-                    # Adjust layout to prevent subplot titles from overlapping
-                    plt.tight_layout()
+                        # Adjust layout to prevent subplot titles from overlapping
+                        plt.tight_layout()
 
                     # Show the plot
                     plt.show()

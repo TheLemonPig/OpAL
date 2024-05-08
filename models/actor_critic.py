@@ -11,8 +11,6 @@ class ActorCritic(BaseRL):
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
-        # TODO: Implement location counter
-        # self.location_counter = np.zeros(state_space)
         self.vs = np.ones(state_space) * 0.5
         self.ps = np.ones(state_space+action_space) * 0.5
 
@@ -42,3 +40,14 @@ class ActorCritic(BaseRL):
 
     def get_optimal_policy(self):
         return self.ps.argmax(axis=-1)
+
+    def reinitialize_weights(self):
+        self.vs = np.ones_like(self.vs) * 0.5
+        self.ps = np.ones_like(self.ps) * 0.5
+
+    def get_probabilities(self):
+        p_values = safe_softmax(self.ps[self.state] * self.beta)
+        return p_values
+
+    def get_probabilities(self):
+        return safe_softmax(self.ps[self.state] * self.beta)

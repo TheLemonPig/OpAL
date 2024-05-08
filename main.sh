@@ -1,11 +1,11 @@
 #!/bin/sh
 
-#SBATCH -J OpAL-Star-wTests
+#SBATCH -J OpAL-Star
 #SBATCH --account=carney-brainstorm-condo
-#SBATCH --time=2:30:00
-#SBATCH --array=0-99
-#SBATCH --mem=16GB
-#SBATCH -n 3
+#SBATCH --time=2:00:00
+#SBATCH --array=0-999
+#SBATCH --mem=20GB
+#SBATCH -n 1
 #SBATCH -N 1
 #SBATCH -e slurm-%j.err
 #SBATCH -o slurm-%j.out

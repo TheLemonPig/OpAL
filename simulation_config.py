@@ -13,8 +13,7 @@ models = [
     # actor_critic_,
     # opal_star_qs_,
     opal_star_,
-    # opal_star_qs_,
-    # opal_star_var_,
+    # opal_plus_,
     # q_learning_
 ]
 
@@ -59,5 +58,14 @@ config_ = {
     "n_reps": 1,
     "environment_params": environments,
     "model_params": models,
-    "seed": range(1000)
+    "seed": range(1000),
+    "hyperparams": {
+        # 'T': (250000, 750000, 50000),
+        'alpha': (0.05,1.01,0.05),
+        'alpha_c': [0.025, 0.05, 0.1],
+        'beta': (1.0, 10.01, 0.5),
+        # 'gamma': (0.95,0.98,0.01),
+        #'phi': (0.5,2.5,0.2),
+        #'k': (2.0, 22.0, 2.0)
+    }
 }

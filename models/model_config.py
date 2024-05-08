@@ -17,12 +17,13 @@ q_learning_ = {
 }
 
 opal_star_ = {
-    "name": 'OpAL*',
+    "name": 'OpALStar',
     "model": 'OpALStar',
     "alpha_g": 0.95,
     "alpha_n": 0.95,
     "alpha_c": 0.1,
     "beta": 1.0,
+    "gamma": 0.0,
     "gamma": 0.0,
     "rho": 0,
     "phi": 1.0,
@@ -52,7 +53,7 @@ opal_star_qs_ = {
 
 
 opal_plus_ = {
-    "name": 'OpAL+',
+    "name": 'OpALPlus',
     "model": 'OpALPlus',
     "alpha_g": 0.95,
     "alpha_n": 0.95,

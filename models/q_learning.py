@@ -31,5 +31,9 @@ class QLearning(BaseRL):
     def get_optimal_policy(self):
         return self.qs.argmax(axis=-1)
 
+    def reinitialize_weights(self):
+        self.qs = np.ones_like(self.qs) * 0.5
 
-
+    def get_probabilities(self):
+        p_values = safe_softmax(self.qs[self.state] * self.beta)
+        return p_values
