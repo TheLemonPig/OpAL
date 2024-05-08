@@ -92,7 +92,7 @@ class OpALPlus(BaseRL):
         return delta/(self.r_mag-self.l_mag)
 
     def get_weights(self):
-        return {"vs": self.vs, "gs": self.gs, "ns": self.ns}
+        return {"qs": self.qs, "gs": self.gs, "ns": self.ns}
 
     def get_optimal_policy(self):
         # This is out of date
