@@ -13,6 +13,10 @@ Logs/*.pkl
 
 Data/*.csv
 
-*.pycache
+environments/*.__pycache__
+models/*.__pycache__
+analysis/*.__pycache__
+*.__pycache__
+
 *.DS_Store
 *.vscode
