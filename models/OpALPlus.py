@@ -114,3 +114,8 @@ class OpALPlus(BaseRL):
             raise ValueError
 
         return p_values
+    
+    def reinitialize_weights(self):
+        self.qs = np.ones_like(self.qs) * 0.5
+        self.gs = np.ones_like(self.gs)
+        self.ns = np.ones_like(self.ns)
