@@ -45,7 +45,7 @@ class Simulator:
         results['rolling'] = []
         results['rho'] = []
         results['anneal'] = []
-        results['weights']: Dict[str, np.array] = {k: np.zeros((v.shape + (steps,))) for k, v in
+        results['weights'] = {k: np.zeros((v.shape + (steps,))) for k, v in
                                                    model.get_weights().items()}
         results['probabilities'] = np.zeros((model.state_space + model.action_space + (steps,)))
         n_steps = 0
