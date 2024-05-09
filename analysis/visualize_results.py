@@ -69,7 +69,7 @@ def state_heatmap(config, results, n_reps, average=True, **kwargs):
                             action_list = results[env_dic['name']][mod_dic['name']][n]['actions']
                             action_counts += action_counter(action_list, action_space)
                         average_counts = (action_counts / action_counts.sum()).reshape((1, -1))
-                        plt.title(f'Average actions per trial by {mod_dic["name"]}')
+                        plt.title(f'Average actions per trial by {mod_dic["name"]} in {env_dic["name"]}')
                         plt.imshow(average_counts, cmap='viridis', interpolation='nearest')
                         for j in range(average_counts.shape[1]):
                             plt.text(j, 0, f'{np.round(average_counts[0,j],decimals=2)}', ha='center', va='center', color='w')
@@ -308,8 +308,9 @@ def plot_trends(config, results, n_reps, **kwargs):
                 for n in range(n_reps):
                     avg_cum += results[env_dic['name']][mod_dic['name']][n]['cumulative']
                 avg_cum = avg_cum / n_reps
-                plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']} in {env_dic['name']}")
+                plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']}")
             plt.legend()
+            plt.title(f'Cumulative Reward in {env_dic["name"]}')
             plt.show()
     if kwargs['rolling']:
         roll = 100
@@ -319,9 +320,9 @@ def plot_trends(config, results, n_reps, **kwargs):
                 for n in range(n_reps):
                     avg_cum += results[env_dic['name']][mod_dic['name']][n]['rolling']
                 avg_cum = avg_cum / n_reps
-                plt.plot(np.arange(len(avg_cum[roll:])), avg_cum[roll:], label=f"{mod_dic['name']} in {env_dic['name']}")
+                plt.plot(np.arange(len(avg_cum[roll:])), avg_cum[roll:], label=f"{mod_dic['name']}")
             plt.legend()
-            plt.title('Rolling Average Reward')
+            plt.title(f'Rolling Average Reward in  in {env_dic["name"]}')
             plt.show()
     if kwargs['rho']:
         for env_dic in config['environment_params']:
@@ -334,10 +335,10 @@ def plot_trends(config, results, n_reps, **kwargs):
                     avg_cum = avg_cum / n_reps
                     plt.xlabel('epochs')
                     plt.ylabel('rho')
-                    plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']} in {env_dic['name']}")
+                    plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']}")
             if avg_cum is not None:
                 plt.legend()
-                plt.title('Rho Value over Training')
+                plt.title(f'Rho Value over Training in {env_dic["name"]}')
                 plt.show()
     if kwargs['anneal']:
         for env_dic in config['environment_params']:
@@ -350,10 +351,10 @@ def plot_trends(config, results, n_reps, **kwargs):
                     avg_cum = avg_cum / n_reps
                     plt.xlabel('epochs')
                     plt.ylabel('anneal')
-                    plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']} in {env_dic['name']}")
+                    plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']}")
             if avg_cum is not None:
                 plt.legend()
-                plt.title('Annealing Coefficient over Training')
+                plt.title(f'Annealing Coefficient over Training in {env_dic["name"]}')
                 plt.show()
     if kwargs['weights']:
         for env_dic in config['environment_params']:
@@ -375,7 +376,7 @@ def plot_trends(config, results, n_reps, **kwargs):
                         this_ax.set_ylabel('Weight Value')
                         this_ax.legend()
                         this_ax.set_title(f'{k} Weights')
-                fig.suptitle(f"{mod_dic['name']}")
+                fig.suptitle(f"{mod_dic['name']} in {env_dic['name']}")
                 plt.show()
     if kwargs['probabilities']:
         for env_dic in config['environment_params']:
@@ -392,7 +393,8 @@ def plot_trends(config, results, n_reps, **kwargs):
                 plt.xlabel('Epochs')
                 plt.ylabel('Probability')
                 plt.legend()
-                plt.title(f"{mod_dic['name']} Probabilities")
+                plt.ylim((0,1))
+                plt.title(f"{mod_dic['name']} Probabilities in {env_dic['name']}")
                 plt.show()
     if kwargs['success_probability']:
         for env_dic in config['environment_params']:
