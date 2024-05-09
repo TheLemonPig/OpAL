@@ -7,10 +7,9 @@ def success_metrics(config, results, n_reps, average=True, compare=None, verbose
     if compare:
         print('compare branch not implemented for success_metrics')
     else:
-        success_rates = []
+        success_results = []
     for env_dic in config['environment_params']:
             if env_dic['model'] == 'GridWorld':
-                success_results = []
                 for mod_dic in config['model_params']:
                     domain = env_dic['state_space']
                     terminals = env_dic['terminal_states']
@@ -31,11 +30,10 @@ def success_metrics(config, results, n_reps, average=True, compare=None, verbose
                             else:
                                 n_failures += location_counts[terminal]
                         n_attempts = n_success + n_failures + 1
-                    if verbose:
+                        if verbose:
                             print(f'{mod_dic["name"]} success rate: {np.round(n_success/n_attempts*100, 2)}%')
-                    success_results.append(np.round(n_success/n_attempts*100, 2))
+                        success_results.append(np.round(n_success/n_attempts*100, 2))
             elif env_dic['model'] == 'BanditTask':
-                success_results = []
                 for mod_dic in config['model_params']:
                     success_actions = env_dic['success_actions']
                     action_space = np.array(env_dic['ps']).shape
@@ -59,7 +57,7 @@ def success_metrics(config, results, n_reps, average=True, compare=None, verbose
                         if verbose:
                             print(f'{mod_dic["name"]} success rate: {np.round(n_success / n_attempts * 100, 2)}%')
                         success_results.append(np.round(n_success / n_attempts * 100, 2))
-    return success_rates
+    return success_results
 
 def auc(config, results, n_reps, average=True, verbose=True, **kwargs):
     aucs = []
