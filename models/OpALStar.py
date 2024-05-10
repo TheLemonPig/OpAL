@@ -7,14 +7,15 @@ from scipy.stats import beta as beta_dist
 
 class OpALStar(BaseRL):
 
-    def __init__(self, action_space, state_space, start_state, alpha_c, alpha_g, alpha_n, beta, gamma, rho, phi, k,
-                 r_mag=1, l_mag=-1, T=100, anneal_method='', name=None, **kwargs):
+    def __init__(self, action_space, state_space, start_state, alpha_c, alpha_g, alpha_n, beta, gamma, gamma_h, rho, phi, k,
+                 r_mag=1, l_mag=-1, T=100, anneal_method='', hs=True, name=None, **kwargs):
         BaseRL.__init__(self, action_space=action_space, state_space=state_space, start_state=start_state, name=name)
         self.alpha_c = alpha_c
         self.alpha_g = alpha_g
         self.alpha_n = alpha_n
         self.beta = beta
         self.gamma = gamma
+        self.gamma_h = gamma_h
         self.rho = rho
         self.phi = phi
         self.k = k
@@ -23,6 +24,8 @@ class OpALStar(BaseRL):
         self.visitation_counter = np.zeros(state_space+action_space)
         # self.qs = np.ones(state_space+action_space) * 0.5
         # self.vs = np.ones(state_space) * 0.5
+        self.hs = np.ones(action_space) * 0.5
+        self.use_hs = hs
         self.qs = np.ones(action_space) * 0.5
         self.gs = np.ones(state_space+action_space) * 1.0
         self.ns = np.ones(state_space+action_space) * 1.0
@@ -61,8 +64,12 @@ class OpALStar(BaseRL):
     def update_metacritic(self, reward):
         # TODO: Build into code that agent knows if it is a terminal
         if not reward == -0.04:
-            self.eta_c += reward
-            self.gamma_c += 1 - reward
+            if reward >= 0:
+                self.eta_c += 1
+            else:
+                self.gamma_c += 1
+            # self.eta_c += reward
+            # self.gamma_c += 1 - reward
             # self.eta_c += reward - self.l_mag
             # self.gamma_c += self.r_mag - reward
         n_choices = self.qs.shape[0]
@@ -78,6 +85,31 @@ class OpALStar(BaseRL):
             self.anneal = 1
 
     def update_critic(self, new_state, action, reward):
+        # Determining likelihood of continuous value being from a certain mean
+        # EV[t] = reward[t] + reward[t-1]*gamma_h + reward[t-2]*gamma_h**2 + reward[t-3]*gamma_h**3 + ...
+        # This is the same recursive formula used for TD Learning, which leads us to...
+        # EV[t] = reward[t] *  EV[t-1]*gamma_h
+        # Over time this will tend towards ...
+        # EV[t] = mean_reward * 1/(1-gamma_h)
+        # But we are interested the trialwise expected value (mean_reward) rather than the accuulated reward, so we add a term...
+        # E(reward)[t] = EV[t] * (1-gamma_h) = mean_reward * 1/(1-gamma_h) * (1-gamma_h) = mean_reward
+        # delta_h = ...
+        # = new_E - old_E...
+        # = reward * (1 - gamma_h) + old_EV * gamma_h - old_EV
+        # = reward * (1 - gamma_h) + old_EV * (gamma_h - 1)
+        # = reward * (1 - gamma_h) - old_EV * (1 - gamma_h)
+        # = (reward - old_E) * (1 - gamma_h)
+        # So gamma_h can be thought of as stabilizing the actors by acting like a learning rate for the critic
+        if self.use_hs:
+            old_EV = self.hs[action]
+            new_EV = reward * (1 - self.gamma_h) + old_EV * self.gamma_h
+            self.hs[action] = new_EV
+
+            # delta_h = (new_EV - old_EV) * (1 - self.gamma_h)
+            delta_h = (new_EV - self.qs[action])
+            delta = delta_h + self.qs.max() * self.gamma
+        else:
+            delta = reward - self.qs[action] + self.qs.max() * self.gamma
         # States
         # delta = reward - self.vs[self.state] + self.vs[new_state] * self.gamma
         # self.vs[self.state] += self.alpha_c * delta
@@ -85,7 +117,6 @@ class OpALStar(BaseRL):
         # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
         # self.qs[self.state][action] += self.alpha_c * delta
         # Actions
-        delta = reward - self.qs[action] + self.qs.max() * self.gamma
         self.qs[action] += self.alpha_c * delta
         # # Mix-up
         # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
