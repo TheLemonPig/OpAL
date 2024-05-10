@@ -3,8 +3,10 @@ from models.model_config import *
 
 environments = [
     bandit_task_small_sparse,
+    bandit_task_small_sparse_gaussian,
     #bandit_task_large_sparse,
-    #bandit_task_small_rich,
+    bandit_task_small_rich,
+    bandit_task_small_rich_gaussian,
     # grid_world_small_rich,
     # grid_world_small_sparse
 ]
@@ -13,13 +15,14 @@ models = [
     # actor_critic_,
     # opal_star_qs_,
     opal_star_,
+    opal_star_hs,
     # opal_plus_,
     # q_learning_
 ]
 
 config_ = {
-    "verbose": False,
-    "plot": False,
+    "verbose": True,
+    "plot": True,
     "verbose_params": {
         'success_metrics': {
             'average': True
@@ -44,10 +47,10 @@ config_ = {
             'average': True
         },
         'trends': {
-            'cumulative': True,
-            'rolling': True,
-            'rho': True,
-            'anneal': True,
+            'cumulative': False,
+            'rolling': False,
+            'rho': False,
+            'anneal': False,
             'weights': True,
             'probabilities': True,
             'success_probability': True
@@ -55,7 +58,8 @@ config_ = {
     },
     "thin": 1,
     "epochs": 250,
-    "n_reps": 1,
+    "n_reps": 50,
+    "test_ratio": 0.5,
     "environment_params": environments,
     "model_params": models,
     "seed": range(1000),
