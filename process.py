@@ -9,9 +9,8 @@ from analysis.quantify_results import success_metrics
 from_csv = True
 opal_data = True
 
+preprefix = 'AUCs_'
 # preprefix = 'Test_'
-# preprefix = 'Success_'
-preprefix = 'Test_'
 
 if opal_data:
     prefix = 'OpAL_'
@@ -68,13 +67,14 @@ with open(config_path, 'rb') as f:
 hyperparams = config['hyperparams']
 lists_of_hyperparams = dict()
 for k,v in hyperparams.items():
-        if type(v) == tuple:
-            sublist = np.arange(*v)
-        elif type(v) == list:
-            sublist = v
-        lists_of_hyperparams.update({k: np.round(sublist,decimals=5)})
+    if type(v) == tuple:
+        start, stop, step = v
+        stop += 1e-10
+        sublist = np.arange(start, stop, step)
+    elif type(v) == list:
+        sublist = v
+    lists_of_hyperparams.update({k: np.round(sublist,decimals=5)})
 param_permutations = list(product(*lists_of_hyperparams.values()))
-# assert len(results) == len(param_permutations)
 n_permutations = len(param_permutations)
 n_models = len(config['model_params'])
 n_envs = len(config['environment_params'])
