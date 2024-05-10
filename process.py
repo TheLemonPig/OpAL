@@ -9,8 +9,8 @@ from analysis.quantify_results import success_metrics
 from_csv = True
 opal_data = True
 
-preprefix = 'AUCs_'
-# preprefix = 'Test_'
+# preprefix = 'AUCs_'
+preprefix = 'Test_'
 
 if opal_data:
     prefix = 'OpAL_'
@@ -29,8 +29,10 @@ else:
 
 log_folder = f'{prefix}Logs'
 data_folder = f'Data'
+out_data_folder = f'Compiled_Data'
 log_path = os.path.join(os.getcwd(),log_folder)
 data_path = os.path.join(os.getcwd(),data_folder)
+out_data_path = os.path.join(os.getcwd(),out_data_folder)
 
 path_prefix = os.path.join(log_folder,file_prefix)
 config_path = os.path.join(log_folder,f'{prefix}Config.pkl')
@@ -141,7 +143,7 @@ for j in range(n_models):
 success_array = np.round(success_rates.reshape((success_rates.shape[0]*success_rates.shape[1],-1)),decimals=2)
 df = pd.DataFrame(data={results.columns[i]: success_array[i] for i in range(len(results.columns))},index=param_permutations)
 if from_csv:
-    path = os.path.join(data_path,f'{file_prefix}Compiled.csv')
+    path = os.path.join(out_data_path,f'{file_prefix}Compiled.csv')
     # np.savetxt(path,success_array,delimiter=',')
     df_results.to_csv(path)
 
