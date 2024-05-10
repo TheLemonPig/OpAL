@@ -32,7 +32,7 @@ def main(config):
     results = simulator.run(reps=config['n_reps'], steps=config['epochs'], seed=config['seed'], thin=config['thin'])
     res = None
     if config['verbose']:
-        res = verbose_helper(config, results, config['n_reps'], **config['verbose_params'])
+        res = verbose_helper(config, results, config['n_reps'], test_ratio=config['test_ratio'], **config['verbose_params'])
     if config['plot']:
         plot_helper(config, results, config['n_reps'], **config['plot_params'])
     return res

@@ -24,13 +24,34 @@ opal_star_ = {
     "alpha_c": 0.1,
     "beta": 1.0,
     "gamma": 0.0,
+    "gamma_h": 0,
     "rho": 0,
     "phi": 1.0,
     "k": 20,
     "T": 100.0,
     "r_mag": 1.0,
     "l_mag": 0,
-    "anneal_method": 'variance'
+    "anneal_method": 'variance',
+    "hs": False
+}
+
+opal_star_hs = {
+    "name": 'OpALStarHs',
+    "model": 'OpALStar',
+    "alpha_g": 0.95,
+    "alpha_n": 0.95,
+    "alpha_c": 0.1,
+    "beta": 1.0,
+    "gamma": 0.0,
+    "gamma_h": 0.0,
+    "rho": 0,
+    "phi": 1.0,
+    "k": 20,
+    "T": 100.0,
+    "r_mag": 1.0,
+    "l_mag": 0,
+    "anneal_method": 'variance',
+    "hs": True
 }
 
 opal_star_qs_ = {

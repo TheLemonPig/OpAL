@@ -34,6 +34,33 @@ bandit_task_small_rich = {
     "interactions": [0, 1]
 }
 
+bandit_task_small_sparse_gaussian = {
+    "name": 'BanditTaskSmallSparseGaussian',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "ps": [0.3, 0.2],
+    "success_actions": [0],
+    "interactions": [0, 1],
+    "std": 0.5
+}
+
+bandit_task_small_rich_gaussian = {
+    "name": 'BanditTaskSmallRichGaussian',
+    "model": 'BanditTask',
+    # "state_space": (2,),
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "ps": [0.8, 0.7],
+    "success_actions": [0],
+    "interactions": [0, 1],
+    "std": 0.5
+}
+
+# Grid Worlds
+
 grid_world_small_sparse = {
     "name": 'GridWorldSmallSparse',
     "model": 'GridWorld',

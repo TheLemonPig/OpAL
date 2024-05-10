@@ -26,8 +26,7 @@ def location_counter(state_list, domain):
 def action_counter(action_list, action_space):
     action_counts = np.zeros(action_space)
     for i in range(action_space[0]):
-        for j in range(action_space[1]):
-            action_counts[i, j] += action_list.count((i, j))
+        action_counts[i] += action_list.count(i)
     return action_counts
 
 
