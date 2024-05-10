@@ -75,6 +75,5 @@ def auc(config, results, n_reps, average=True, verbose=True, **kwargs):
             else:
                 raise KeyError
             auc = np.round(p_array[:,indices].sum(), decimals=2)
-            print(p_array.shape)
             aucs.append(auc)
     return aucs
