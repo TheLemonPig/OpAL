@@ -311,54 +311,73 @@ def plot_trends(config, results, n_reps, **kwargs):
                 plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']}")
             plt.legend()
             plt.title(f'Cumulative Reward in {env_dic["name"]}')
+            plt.xlabel('Time steps')
+            plt.ylabel('Cumulative Reward')
             plt.show()
     if kwargs['rolling']:
         roll = 100
         for env_dic in config['environment_params']:
             for mod_dic in config['model_params']:
-                avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['rolling']),))
+                avg_roll = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['rolling']),))
                 for n in range(n_reps):
-                    avg_cum += results[env_dic['name']][mod_dic['name']][n]['rolling']
-                avg_cum = avg_cum / n_reps
-                plt.plot(np.arange(len(avg_cum[roll:])), avg_cum[roll:], label=f"{mod_dic['name']}")
+                    avg_roll += results[env_dic['name']][mod_dic['name']][n]['rolling']
+                avg_roll = avg_roll / n_reps
+                ste_roll = np.zeros_like(avg_roll)
+                for n in range(n_reps):
+                    ste_roll += abs(avg_roll - results[env_dic['name']][mod_dic['name']][n]['rolling'])/np.sqrt(n_reps)
+                ste_roll = ste_roll / n_reps
+                plt.errorbar(np.arange(len(avg_roll)), avg_roll, ste_roll, label=f"{mod_dic['name']}")
+                plt.plot(np.arange(len(avg_roll)), avg_roll, label=f"{mod_dic['name']}")
+            plt.ylabel('Rolling Reward')
+            plt.xlabel('Time steps')
             plt.legend()
             plt.title(f'Rolling Average Reward in  in {env_dic["name"]}')
             plt.show()
     if kwargs['rho']:
         for env_dic in config['environment_params']:
-            avg_cum = None
+            avg_rho = None
             for mod_dic in config['model_params']:
                 if 'rho' in mod_dic.keys():
-                    avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['rho']),))
+                    avg_rho = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['rho']),))
                     for n in range(n_reps):
-                        avg_cum += results[env_dic['name']][mod_dic['name']][n]['rho']
-                    avg_cum = avg_cum / n_reps
+                        avg_rho += results[env_dic['name']][mod_dic['name']][n]['rho']
+                    avg_rho = avg_rho / n_reps
+                    ste_rho = np.zeros_like(avg_rho)
+                    for n in range(n_reps):
+                        ste_rho += abs(avg_rho-results[env_dic['name']][mod_dic['name']][n]['rho'])/np.sqrt(n_reps)
+                    ste_rho = ste_rho / n_reps
                     plt.xlabel('epochs')
                     plt.ylabel('rho')
-                    plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']}")
-            if avg_cum is not None:
+                    plt.errorbar(np.arange(len(avg_rho)), avg_rho, ste_rho, label=f"{mod_dic['name']}")
+                    plt.plot(np.arange(len(avg_rho)), avg_rho, label=f"{mod_dic['name']}")
+            if avg_rho is not None:
                 plt.legend()
                 plt.title(f'Rho Value over Training in {env_dic["name"]}')
                 plt.show()
     if kwargs['anneal']:
         for env_dic in config['environment_params']:
-            avg_cum = None
+            avg_anneal = None
             for mod_dic in config['model_params']:
                 if len(results[env_dic['name']][mod_dic['name']][0]['anneal']) > 0:
-                    avg_cum = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['anneal']),))
+                    avg_anneal = np.zeros((len(results[env_dic['name']][mod_dic['name']][0]['anneal']),))
                     for n in range(n_reps):
-                        avg_cum += results[env_dic['name']][mod_dic['name']][n]['anneal']
-                    avg_cum = avg_cum / n_reps
+                        avg_anneal += results[env_dic['name']][mod_dic['name']][n]['anneal']
+                    avg_anneal = avg_anneal / n_reps
+                    ste_anneal = np.zeros_like(avg_anneal)
+                    for n in range(n_reps):
+                        ste_anneal += abs(avg_anneal-results[env_dic['name']][mod_dic['name']][n]['anneal'])/np.sqrt(n_reps)
+                    ste_anneal = ste_anneal / n_reps
                     plt.xlabel('epochs')
                     plt.ylabel('anneal')
-                    plt.plot(np.arange(len(avg_cum)), avg_cum, label=f"{mod_dic['name']}")
-            if avg_cum is not None:
+                    plt.errorbar(np.arange(len(avg_anneal)), avg_anneal, ste_anneal, label=f"{mod_dic['name']}")
+                    plt.plot(np.arange(len(avg_anneal)), avg_anneal, label=f"{mod_dic['name']}")
+            if avg_anneal is not None:
                 plt.legend()
                 plt.title(f'Annealing Coefficient over Training in {env_dic["name"]}')
                 plt.show()
     if kwargs['weights']:
         for env_dic in config['environment_params']:
-            avg_cum = None
+            avg_weights = None
             for mod_dic in config['model_params']:
                 w_dic = results[env_dic['name']][mod_dic['name']][0]['weights']
                 fig, ax = plt.subplots(1, len(w_dic))
@@ -369,9 +388,14 @@ def plot_trends(config, results, n_reps, **kwargs):
                     for n in range(n_reps):
                         w_array += results[env_dic['name']][mod_dic['name']][n]['weights'][k]
                     w_array = w_array / n_reps
+                    ste_array = np.zeros_like(weights)
+                    for n in range(n_reps):
+                        ste_array += abs(w_array - results[env_dic['name']][mod_dic['name']][n]['weights'][k])/np.sqrt(n_reps)
+                    ste_array = ste_array / n_reps
                     w_indices = list(product(*[range(d) for d in w_array.shape[:-1]]))
                     for jdx, index in enumerate(w_indices):
-                        this_ax.plot(w_array[index], label=f'{index}', color=((jdx + 1) / len(w_indices), 0, 0, 0.5))
+                        this_ax.errorbar(x=np.arange(config['epochs']), y=w_array[index], yerr=ste_array[index], ecolor=((jdx + 1) / len(w_indices), 0, 0, 0.5))
+                        this_ax.plot(w_array[index], label=f'{index}', color=((jdx + 1) / len(w_indices), 0, 0, 0.25))
                         this_ax.set_xlabel('Epochs')
                         this_ax.set_ylabel('Weight Value')
                         this_ax.legend()
@@ -380,16 +404,20 @@ def plot_trends(config, results, n_reps, **kwargs):
                 plt.show()
     if kwargs['probabilities']:
         for env_dic in config['environment_params']:
-            avg_cum = None
             for mod_dic in config['model_params']:
                 p_values = results[env_dic['name']][mod_dic['name']][0]['probabilities']
                 p_array = np.zeros_like(p_values)
                 for n in range(n_reps):
                     p_array += results[env_dic['name']][mod_dic['name']][n]['probabilities']
                 p_array = p_array / n_reps
+                ste_array = np.zeros_like(p_values)
+                for n in range(n_reps):
+                    ste_array += abs(p_array - results[env_dic['name']][mod_dic['name']][n]['probabilities'])/np.sqrt(n_reps)
+                ste_array = ste_array / n_reps
                 p_indices = list(product(*[range(d) for d in p_array.shape[:-1]]))
                 for jdx, index in enumerate(p_indices):
-                    plt.plot(p_array[index], label=f'{index}', color=((jdx + 1) / len(p_indices), 0, 0, 0.5))
+                    plt.errorbar(x=np.arange(config['epochs']), y=p_array[index], yerr=ste_array[index], ecolor=((jdx + 1) / len(p_indices), 0, 0, 0.5))
+                    plt.plot(p_array[index], label=f'{index}', color=((jdx + 1) / len(p_indices), 0, 0, 0.25))
                 plt.xlabel('Epochs')
                 plt.ylabel('Probability')
                 plt.legend()
@@ -404,9 +432,14 @@ def plot_trends(config, results, n_reps, **kwargs):
                 for n in range(n_reps):
                     p_array += results[env_dic['name']][mod_dic['name']][n]['probabilities']
                 p_array = p_array / n_reps
+                ste_array = np.zeros_like(p_values)
+                for n in range(n_reps):
+                    ste_array += abs(p_array - results[env_dic['name']][mod_dic['name']][n]['probabilities'])/(np.sqrt(n_reps)*n_reps)
                 if env_dic['model'] == 'BanditTask':
-                    p_success = p_array[0][env_dic['success_actions']]
-                    plt.plot(p_success.transpose((1,0)), label=f'{mod_dic["name"]}')
+                    p_success = p_array[0][env_dic['success_actions']].ravel()
+                    p_ste = ste_array[0][env_dic['success_actions']].ravel()
+                    plt.errorbar(x=np.arange(config['epochs']), y=p_success, yerr=p_ste, label=f'{mod_dic["name"]}')
+                    plt.plot(p_success, label=f'{mod_dic["name"]}')
             plt.xlabel('Epochs')
             plt.ylabel('Probability')
             plt.legend()
