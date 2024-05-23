@@ -64,7 +64,7 @@ class OpALStar(BaseRL):
     def update_metacritic(self, reward):
         # TODO: Build into code that agent knows if it is a terminal
         if not reward == -0.04:
-            if reward >= 0:
+            if reward >= 0.5:
                 self.eta_c += 1
             else:
                 self.gamma_c += 1
