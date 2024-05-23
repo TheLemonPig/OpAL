@@ -6,9 +6,9 @@ bandit_task_large_sparse = {
     "state_space": (1,),
     "start_state": (0,),
     "deterministic": False,
-    "ps": [0.3, 0.2, 0.2, 0.2, 0.2],
+    "ps": [0.3, 0.2, 0.2, 0.2, 0.2, 0.2],
     "success_actions": [0],
-    "interactions": [0, 1, 2, 3, 4]
+    "interactions": [0, 1, 2, 3, 4, 5]
 }
 
 bandit_task_small_sparse = {
@@ -25,7 +25,6 @@ bandit_task_small_sparse = {
 bandit_task_small_rich = {
     "name": 'BanditTaskSmallRich',
     "model": 'BanditTask',
-    # "state_space": (2,),
     "state_space": (1,),
     "start_state": (0,),
     "deterministic": False,
@@ -49,7 +48,6 @@ bandit_task_small_sparse_gaussian = {
 bandit_task_small_rich_gaussian = {
     "name": 'BanditTaskSmallRichGaussian',
     "model": 'BanditTask',
-    # "state_space": (2,),
     "state_space": (1,),
     "start_state": (0,),
     "deterministic": False,
@@ -57,6 +55,56 @@ bandit_task_small_rich_gaussian = {
     "success_actions": [0],
     "interactions": [0, 1],
     "std": 0.5
+}
+
+# In-between worlds
+grid_bandit_sparse = {
+    "name": 'GridBanditSparse',
+    "model": 'GridWorld',
+    "state_space": (3, 1),
+    "start_state": (1, 0),
+    "non_terminal_penalty": -0.04,
+    "terminal_states": {(0, 0): 0.2, (2, 0): 0.3},
+    "deterministic": False,
+    "success_terminals": [(2, 0)],
+    "interactions": [(1, 0), (-1, 0)],
+    "obstacles": None
+}
+grid_bandit_rich = {
+    "name": 'GridBanditRich',
+    "model": 'GridWorld',
+    "state_space": (3, 1),
+    "start_state": (1, 0),
+    "non_terminal_penalty": -0.04,
+    "terminal_states": {(0, 0): 0.7, (2, 0): 0.8},
+    "deterministic": False,
+    "success_terminals": [(2, 0)],
+    "interactions": [(1, 0), (-1, 0)],
+    "obstacles": None
+}
+grid_world_3x1_sparse = {
+    "name": 'GridWorld3x1Sparse',
+    "model": 'GridWorld',
+    "state_space": (3, 1),
+    "start_state": (1, 0),
+    "non_terminal_penalty": -0.04,
+    "terminal_states": {(0, 0): 0.2, (2, 0): 0.3},
+    "deterministic": False,
+    "success_terminals": [(2, 0)],
+    "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
+    "obstacles": None
+}
+grid_world_3x1_rich = {
+    "name": 'GridWorld3x1Rich',
+    "model": 'GridWorld',
+    "state_space": (3, 1),
+    "start_state": (1, 0),
+    "non_terminal_penalty": -0.04,
+    "terminal_states": {(0, 0): 0.7, (2, 0): 0.8},
+    "deterministic": False,
+    "success_terminals": [(2, 0)],
+    "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
+    "obstacles": None
 }
 
 # Grid Worlds
