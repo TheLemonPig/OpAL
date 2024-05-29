@@ -24,6 +24,7 @@ class OpALStar(BaseRL):
         self.visitation_counter = np.zeros(state_space+action_space)
         # self.qs = np.ones(state_space+action_space) * 0.5
         # self.vs = np.ones(state_space) * 0.5
+        self.history = [[] for _ in range(action_space[0])]
         self.hs = np.ones(action_space) * 0.5
         self.use_hs = hs
         self.qs = np.ones(action_space) * 0.5
@@ -39,7 +40,6 @@ class OpALStar(BaseRL):
             _, var = beta_dist.stats(self.eta_c, self.gamma_c, moments='mv')
             self.anneal = 1/(1+1/(self.T*var))
         
-
     def act(self):
         self.visitation_counter[self.state] += 1
         beta_g = self.beta*np.max([0, (1+self.rho)])
@@ -70,8 +70,8 @@ class OpALStar(BaseRL):
                 self.gamma_c += 1
             # self.eta_c += reward
             # self.gamma_c += 1 - reward
-            # self.eta_c += reward - self.l_mag
-            # self.gamma_c += self.r_mag - reward
+            # self.eta_c += max(0,reward - self.l_mag)
+            # self.gamma_c += max(0,self.r_mag - reward)
         n_choices = self.qs.shape[0]
         mean, var = beta_dist.stats(self.eta_c/n_choices, self.gamma_c/n_choices, moments='mv')
         std = np.sqrt(var)
@@ -102,10 +102,24 @@ class OpALStar(BaseRL):
         # So gamma_h can be thought of as stabilizing the actors by acting like a learning rate for the critic
         if self.use_hs:
             old_EV = self.hs[action]
-            new_EV = reward * (1 - self.gamma_h) + old_EV * self.gamma_h
-            self.hs[action] = new_EV
+            action_history = self.history[action]
+            n_samples = len(action_history)
+            # mean = np.mean(action_history)  # -- this will probably be what allows us the best of both
+            # var = np.var(action_history)  # i.e. fast to change at first and then slow to change over time BUT speed up if the EV is clearly wrong
 
+            new_EV = (reward + old_EV * self.gamma_h * n_samples) / (n_samples * self.gamma_h + 1)
+            self.hs[action] = new_EV
+            self.history[action].append(reward)
+            # (0.5 * 0.1 + 0.5 * 0.9 * n) / (0.9 * (n+1)) = (0.45n + 0.05)/(0.9*(n+1)) =
+            # (0.45n + 0.45 - 0.5)/(0.9*(n+1)) = (0.45/0.9) - 0.5/(0.9*(n+1)) = 0.5 - 
+            # ((m - e) + m * g * n) / (g * n + 1) = (m * (g * n + 1) - e) / (g * n + 1) = m - e/(g*n+1)
+            # (m + (m - e) * g * n) / (g * n + 1) = (m * (g * n + 1) - e * g * n) / (g * n + 1) = m - e(g*n)/(g*n+1) = m - e(1 - 1/(g*n+1))
+            # We don't want gamma multiplied to n as n grows unrestricted
+            # Instead we want g as a multiplier on e, essentially as a learning rate
             # delta_h = (new_EV - old_EV) * (1 - self.gamma_h)
+            # i.e. instead of m - e/(g*n+1) --> m - e*(1-g)/(n+1)
+            # instead of m - e(1 - 1/(g*n+1)) --> m - e*(1-g)(1 - 1/(n+1))
+            # Which going backwards implies...two different equations which doesn't work since you can't assume you know what the mean is
             delta_h = (new_EV - self.qs[action])
             delta = delta_h + self.qs.max() * self.gamma
         else:
@@ -170,5 +184,7 @@ class OpALStar(BaseRL):
 
     def reinitialize_weights(self):
         self.qs = np.ones_like(self.qs) * 0.5
+        self.hs = np.ones_like(self.hs) * 0.5
         self.gs = np.ones_like(self.gs)
         self.ns = np.ones_like(self.ns)
+        self.history = []
