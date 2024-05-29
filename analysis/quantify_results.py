@@ -69,6 +69,7 @@ def auc(config, results, n_reps, average=True, verbose=True, **kwargs):
             if env_dic['model'] == 'GridWorld':
                 indices = env_dic['success_terminals']
                 auc = np.round(p_array[indices].sum(), decimals=2)
+                # AUC definition currently doesn't generalize to grid world without explicitly defining what the "right" deicison to make at every location is
             elif env_dic['model'] == 'BanditTask':
                 indices = env_dic['success_actions']
                 auc = np.round(p_array[:,indices].sum(), decimals=2)

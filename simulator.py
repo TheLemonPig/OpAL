@@ -83,7 +83,7 @@ class Simulator:
                     results['attempts'].append(0)
 
         environment.restart()
-        model.restart()
+        model.reinitialize_weights()
         return results
 
     def get_predictions(self):

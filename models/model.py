@@ -27,7 +27,6 @@ class BaseRL:
 
     def restart(self):
         self.state = self.start_state
-        self.reinitialize_weights()
 
     def reinitialize_weights(self):
         raise NotImplementedError(f'{self.name}')
