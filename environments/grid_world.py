@@ -32,7 +32,7 @@ class GridWorld(BaseEnvironment):
             # grid world value modeled as bandit probability
             p = abs(self.world_array[new_state])
             sign = self.world_array[new_state]/abs(self.world_array[new_state])
-            reward = np.random.choice(2, 1, p=[1 - p, p]).item() * sign
+            reward = np.random.binomial(size=1, n=1, p=p).item() * sign
         else:
             # grid world value modeled as reward
             reward = self.world_array[new_state]

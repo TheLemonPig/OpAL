@@ -22,8 +22,7 @@ class BanditTask(BaseEnvironment):
             reward = p
         else:
             if self.std == 0:
-                # reward = np.random.choice(2, 1, p=[1-p, p]).item()
-                reward = np.random.binomial(size=1, n=1, p=p)[0]
+                reward = np.random.binomial(size=1, n=1, p=p).item()
             else:
                 reward = np.random.normal(p, self.std)
             self.model_state = tuple(np.random.randint(self.state_space))

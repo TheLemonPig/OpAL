@@ -32,6 +32,27 @@ bandit_task_small_rich = {
     "success_actions": [0],
     "interactions": [0, 1]
 }
+bandit_task_medium_sparse = {
+    "name": 'BanditTaskMediumSparse',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "ps": [0.3, 0.2, 0.2, 0.2],
+    "success_actions": [0],
+    "interactions": [0, 1, 2, 3]
+}
+
+bandit_task_medium_rich = {
+    "name": 'BanditTaskMediumRich',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "ps": [0.8, 0.7, 0.7, 0.7],
+    "success_actions": [0],
+    "interactions": [0, 1, 2, 3]
+}
 
 bandit_task_small_sparse_gaussian = {
     "name": 'BanditTaskSmallSparseGaussian',
@@ -58,8 +79,8 @@ bandit_task_small_rich_gaussian = {
 }
 
 # In-between worlds
-grid_bandit_sparse = {
-    "name": 'GridBanditSparse',
+grid_bandit_small_sparse = {
+    "name": 'GridBanditSmallSparse',
     "model": 'GridWorld',
     "state_space": (3, 1),
     "start_state": (1, 0),
@@ -70,8 +91,8 @@ grid_bandit_sparse = {
     "interactions": [(1, 0), (-1, 0)],
     "obstacles": None
 }
-grid_bandit_rich = {
-    "name": 'GridBanditRich',
+grid_bandit_small_rich = {
+    "name": 'GridBanditSmallRich',
     "model": 'GridWorld',
     "state_space": (3, 1),
     "start_state": (1, 0),
@@ -80,6 +101,30 @@ grid_bandit_rich = {
     "deterministic": False,
     "success_terminals": [(2, 0)],
     "interactions": [(1, 0), (-1, 0)],
+    "obstacles": None
+}
+grid_bandit_medium_sparse = {
+    "name": 'GridBanditMediumSparse',
+    "model": 'GridWorld',
+    "state_space": (3, 3),
+    "start_state": (1, 1),
+    "non_terminal_penalty": -0.04,
+    "terminal_states": {(1, 0): 0.2, (0, 1): 0.2, (1, 2): 0.2, (2, 1): 0.3},
+    "deterministic": False,
+    "success_terminals": [(2, 1)],
+    "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
+    "obstacles": None
+}
+grid_bandit_medium_rich = {
+    "name": 'GridBanditMediumRich',
+    "model": 'GridWorld',
+    "state_space": (3, 3),
+    "start_state": (1, 1),
+    "non_terminal_penalty": -0.04,
+    "terminal_states": {(1, 0): 0.7, (0, 1): 0.7, (1, 2): 0.7, (2, 1): 0.8},
+    "deterministic": False,
+    "success_terminals": [(2, 1)],
+    "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
     "obstacles": None
 }
 grid_world_3x1_sparse = {
