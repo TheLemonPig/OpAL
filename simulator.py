@@ -56,8 +56,8 @@ class Simulator:
             action = model.act()
             if n % thin == 0:
                 results['states'].append(model.state)
-            new_state, reward = environment.interact(action)
-            model.update(new_state, action, reward)
+            new_state, reward, terminal = environment.interact(action)
+            model.update(new_state, action, reward, terminal)
             if n % thin == 0:
                 results['new_states'].append(new_state)
                 results['actions'].append(action)

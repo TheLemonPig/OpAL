@@ -27,7 +27,7 @@ class BanditTask(BaseEnvironment):
                 reward = np.random.normal(p, self.std)
             self.model_state = tuple(np.random.randint(self.state_space))
         reward = reward * self.rewards[self.model_state][action]
-        return self.model_state, reward
+        return self.model_state, reward, True
 
     def time_up(self, n_steps):
         return False

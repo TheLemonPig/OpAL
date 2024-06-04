@@ -36,18 +36,16 @@ class OpALStar(BaseRL):
         self.r_mag = r_mag
         self.l_mag = l_mag
         self.action = None
+        self.at_terminal = False
         if self.anneal_method == 'variance' or self.anneal_method == 'qs':
             _, var = beta_dist.stats(self.eta_c, self.gamma_c, moments='mv')
             self.anneal = 1/(1+1/(self.T*var))
         
     def act(self):
         self.visitation_counter[self.state] += 1
-        beta_g = self.beta*np.max([0, (1+self.rho)])
-        beta_n = self.beta*np.max([0, (1-self.rho)])
+        beta_g = self.beta * np.max([0, (1+self.rho)])
+        beta_n = self.beta * np.max([0, (1-self.rho)])
         net = beta_g * self.gs[self.state] - beta_n * self.ns[self.state]
-        if self.anneal_method == 'qs':
-            w = self.anneal
-            net = net * (1-w) + self.qs[self.state] * w
         p_values = safe_softmax(net)
         action = np.random.choice(len(p_values), 1, p=p_values).item()
         self.action = action
@@ -55,21 +53,21 @@ class OpALStar(BaseRL):
 
     # TODO: Put model responsible for restarting task
 
-    def update(self, new_state, action, reward):
+    def update(self, new_state, action, reward, terminal):
+        self.at_terminal = terminal
         delta = self.update_critic(new_state, action, reward)
         self.update_actor(action, delta)
         self.update_metacritic(reward)
         self.state = new_state
 
     def update_metacritic(self, reward):
-        # TODO: Build into code that agent knows if it is a terminal
-        if not reward == -0.04:
-            if reward >= 0.5:
-                self.eta_c += 1
-            else:
-                self.gamma_c += 1
-            # self.eta_c += reward
-            # self.gamma_c += 1 - reward
+        if self.at_terminal:
+            # if reward >= 0.5:
+            #     self.eta_c += 1
+            # else:
+            #     self.gamma_c += 1
+            self.eta_c += reward
+            self.gamma_c += 1 - reward
             # self.eta_c += max(0,reward - self.l_mag)
             # self.gamma_c += max(0,self.r_mag - reward)
         n_choices = self.qs.shape[0]
@@ -85,56 +83,8 @@ class OpALStar(BaseRL):
             self.anneal = 1
 
     def update_critic(self, new_state, action, reward):
-        # Determining likelihood of continuous value being from a certain mean
-        # EV[t] = reward[t] + reward[t-1]*gamma_h + reward[t-2]*gamma_h**2 + reward[t-3]*gamma_h**3 + ...
-        # This is the same recursive formula used for TD Learning, which leads us to...
-        # EV[t] = reward[t] *  EV[t-1]*gamma_h
-        # Over time this will tend towards ...
-        # EV[t] = mean_reward * 1/(1-gamma_h)
-        # But we are interested the trialwise expected value (mean_reward) rather than the accuulated reward, so we add a term...
-        # E(reward)[t] = EV[t] * (1-gamma_h) = mean_reward * 1/(1-gamma_h) * (1-gamma_h) = mean_reward
-        # delta_h = ...
-        # = new_E - old_E...
-        # = reward * (1 - gamma_h) + old_EV * gamma_h - old_EV
-        # = reward * (1 - gamma_h) + old_EV * (gamma_h - 1)
-        # = reward * (1 - gamma_h) - old_EV * (1 - gamma_h)
-        # = (reward - old_E) * (1 - gamma_h)
-        # So gamma_h can be thought of as stabilizing the actors by acting like a learning rate for the critic
-        if self.use_hs:
-            old_EV = self.hs[action]
-            action_history = self.history[action]
-            n_samples = len(action_history)
-            # mean = np.mean(action_history)  # -- this will probably be what allows us the best of both
-            # var = np.var(action_history)  # i.e. fast to change at first and then slow to change over time BUT speed up if the EV is clearly wrong
-
-            new_EV = (reward + old_EV * self.gamma_h * n_samples) / (n_samples * self.gamma_h + 1)
-            self.hs[action] = new_EV
-            self.history[action].append(reward)
-            # (0.5 * 0.1 + 0.5 * 0.9 * n) / (0.9 * (n+1)) = (0.45n + 0.05)/(0.9*(n+1)) =
-            # (0.45n + 0.45 - 0.5)/(0.9*(n+1)) = (0.45/0.9) - 0.5/(0.9*(n+1)) = 0.5 - 
-            # ((m - e) + m * g * n) / (g * n + 1) = (m * (g * n + 1) - e) / (g * n + 1) = m - e/(g*n+1)
-            # (m + (m - e) * g * n) / (g * n + 1) = (m * (g * n + 1) - e * g * n) / (g * n + 1) = m - e(g*n)/(g*n+1) = m - e(1 - 1/(g*n+1))
-            # We don't want gamma multiplied to n as n grows unrestricted
-            # Instead we want g as a multiplier on e, essentially as a learning rate
-            # delta_h = (new_EV - old_EV) * (1 - self.gamma_h)
-            # i.e. instead of m - e/(g*n+1) --> m - e*(1-g)/(n+1)
-            # instead of m - e(1 - 1/(g*n+1)) --> m - e*(1-g)(1 - 1/(n+1))
-            # Which going backwards implies...two different equations which doesn't work since you can't assume you know what the mean is
-            delta_h = (new_EV - self.qs[action])
-            delta = delta_h + self.qs.max() * self.gamma
-        else:
-            delta = reward - self.qs[action] + self.qs.max() * self.gamma
-        # States
-        # delta = reward - self.vs[self.state] + self.vs[new_state] * self.gamma
-        # self.vs[self.state] += self.alpha_c * delta
-        # # State-actions
-        # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
-        # self.qs[self.state][action] += self.alpha_c * delta
-        # Actions
+        delta = reward - self.qs[action] + self.qs.max() * self.gamma * (not self.at_terminal)
         self.qs[action] += self.alpha_c * delta
-        # # Mix-up
-        # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
-        # self.qs[self.state] += self.alpha_c * delta
         return delta
 
     def update_actor(self, action, delta):
@@ -188,3 +138,56 @@ class OpALStar(BaseRL):
         self.gs = np.ones_like(self.gs)
         self.ns = np.ones_like(self.ns)
         self.history = []
+
+    # def update_critic(self, new_state, action, reward):
+    #     # Determining likelihood of continuous value being from a certain mean
+    #     # EV[t] = reward[t] + reward[t-1]*gamma_h + reward[t-2]*gamma_h**2 + reward[t-3]*gamma_h**3 + ...
+    #     # This is the same recursive formula used for TD Learning, which leads us to...
+    #     # EV[t] = reward[t] *  EV[t-1]*gamma_h
+    #     # Over time this will tend towards ...
+    #     # EV[t] = mean_reward * 1/(1-gamma_h)
+    #     # But we are interested the trialwise expected value (mean_reward) rather than the accuulated reward, so we add a term...
+    #     # E(reward)[t] = EV[t] * (1-gamma_h) = mean_reward * 1/(1-gamma_h) * (1-gamma_h) = mean_reward
+    #     # delta_h = ...
+    #     # = new_E - old_E...
+    #     # = reward * (1 - gamma_h) + old_EV * gamma_h - old_EV
+    #     # = reward * (1 - gamma_h) + old_EV * (gamma_h - 1)
+    #     # = reward * (1 - gamma_h) - old_EV * (1 - gamma_h)
+    #     # = (reward - old_E) * (1 - gamma_h)
+    #     # So gamma_h can be thought of as stabilizing the actors by acting like a learning rate for the critic
+    #     if self.use_hs:
+    #         old_EV = self.hs[action]
+    #         action_history = self.history[action]
+    #         n_samples = len(action_history)
+    #         # mean = np.mean(action_history)  # -- this will probably be what allows us the best of both
+    #         # var = np.var(action_history)  # i.e. fast to change at first and then slow to change over time BUT speed up if the EV is clearly wrong
+
+    #         new_EV = (reward + old_EV * self.gamma_h * n_samples) / (n_samples * self.gamma_h + 1)
+    #         self.hs[action] = new_EV
+    #         self.history[action].append(reward)
+    #         # (0.5 * 0.1 + 0.5 * 0.9 * n) / (0.9 * (n+1)) = (0.45n + 0.05)/(0.9*(n+1)) =
+    #         # (0.45n + 0.45 - 0.5)/(0.9*(n+1)) = (0.45/0.9) - 0.5/(0.9*(n+1)) = 0.5 - 
+    #         # ((m - e) + m * g * n) / (g * n + 1) = (m * (g * n + 1) - e) / (g * n + 1) = m - e/(g*n+1)
+    #         # (m + (m - e) * g * n) / (g * n + 1) = (m * (g * n + 1) - e * g * n) / (g * n + 1) = m - e(g*n)/(g*n+1) = m - e(1 - 1/(g*n+1))
+    #         # We don't want gamma multiplied to n as n grows unrestricted
+    #         # Instead we want g as a multiplier on e, essentially as a learning rate
+    #         # delta_h = (new_EV - old_EV) * (1 - self.gamma_h)
+    #         # i.e. instead of m - e/(g*n+1) --> m - e*(1-g)/(n+1)
+    #         # instead of m - e(1 - 1/(g*n+1)) --> m - e*(1-g)(1 - 1/(n+1))
+    #         # Which going backwards implies...two different equations which doesn't work since you can't assume you know what the mean is
+    #         delta_h = (new_EV - self.qs[action])
+    #         delta = delta_h + self.qs.max() * self.gamma
+    #     else:
+    #         delta = reward - self.qs[action] + self.qs.max() * self.gamma
+    #     # States
+    #     # delta = reward - self.vs[self.state] + self.vs[new_state] * self.gamma
+    #     # self.vs[self.state] += self.alpha_c * delta
+    #     # # State-actions
+    #     # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
+    #     # self.qs[self.state][action] += self.alpha_c * delta
+    #     # Actions
+    #     self.qs[action] += self.alpha_c * delta
+    #     # # Mix-up
+    #     # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
+    #     # self.qs[self.state] += self.alpha_c * delta
+    #     return delta

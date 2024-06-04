@@ -25,7 +25,7 @@ class GridWorld(BaseEnvironment):
         else:
             new_state = self.model_state
         reward = self.sample(new_state)
-        return new_state, reward
+        return new_state, reward, self.at_terminal()
 
     def sample(self, new_state):
         if self.at_terminal() and not self.deterministic:

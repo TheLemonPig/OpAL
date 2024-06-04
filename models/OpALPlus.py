@@ -28,18 +28,16 @@ class OpALPlus(BaseRL):
         self.r_mag = r_mag
         self.l_mag = l_mag
         self.action = None
+        self.at_terminal = False
         if self.anneal_method == 'variance' or self.anneal_method == 'qs':
             _, var = beta_dist.stats(self.eta_c, self.gamma_c, moments='mv')
             self.anneal = 1/(1+1/(self.T*var))
 
     def act(self):
         self.visitation_counter[self.state] += 1
-        beta_g = self.beta*np.max([0, (1+self.rho)])
-        beta_n = self.beta*np.max([0, (1-self.rho)])
+        beta_g = self.beta * np.max([0, (1+self.rho)])
+        beta_n = self.beta * np.max([0, (1-self.rho)])
         net = beta_g * self.gs[self.state] - beta_n * self.ns[self.state]
-        # if self.anneal_method == 'qs':
-        #     w = 1/(1+np.mean(abs(net)))
-        #     net = net * (1-w) + self.vs[self.state] * w
         p_values = safe_softmax(net)
         action = np.random.choice(len(p_values), 1, p=p_values).item()
         self.action = action
@@ -47,17 +45,17 @@ class OpALPlus(BaseRL):
 
     # TODO: Put model responsible for restarting task
 
-    def update(self, new_state, action, reward):
+    def update(self, new_state, action, reward, terminal):
+        self.at_terminal = terminal
         delta = self.update_critic(new_state, action, reward)
         self.update_actor(action, delta)
         self.update_metacritic(reward)
         self.state = new_state
 
     def update_metacritic(self, reward):
-        # TODO: Build into code that agent knows if it is a terminal
-        if not reward == -0.04:
-            self.eta_c += reward - self.l_mag
-            self.gamma_c += self.r_mag - reward
+        if self.at_terminal:
+            self.eta_c += reward
+            self.gamma_c += 1 - reward
         n_choices = self.qs.shape[0]
         mean, var = beta_dist.stats(self.eta_c/n_choices, self.gamma_c/n_choices, moments='mv')
         if self.anneal_method == 'variance':
@@ -75,7 +73,7 @@ class OpALPlus(BaseRL):
         # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
         # self.qs[self.state][action] += self.alpha_c * delta
         # # Actions
-        delta = reward - self.qs[action] + self.qs.max() * self.gamma
+        delta = reward - self.qs[action] + self.qs.max() * self.gamma * (not self.at_terminal)
         self.qs[action] += self.alpha_c * delta
         # # Mix-up
         # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
