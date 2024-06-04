@@ -49,16 +49,13 @@ class Simulator:
                                                    model.get_weights().items()}
         results['probabilities'] = np.zeros((model.state_space + model.action_space + (steps,)))
         n_steps = 0
-        # for n in tqdm(range(steps)):
         for n in range(steps):
-            if n % 50 == 0:
-                x = 0
             action = model.act()
-            if n % thin == 0:
-                results['states'].append(model.state)
+            old_state = model.state
             new_state, reward, terminal = environment.interact(action)
             model.update(new_state, action, reward, terminal)
             if n % thin == 0:
+                results['states'].append(old_state)
                 results['new_states'].append(new_state)
                 results['actions'].append(action)
                 results['rewards'].append(reward)
