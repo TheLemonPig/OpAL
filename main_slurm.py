@@ -60,6 +60,7 @@ def grid_search(config, seed: int):
     for idx, results in enumerate(meta_results):
         success_rate = success_metrics(config, results, 1, test_ratio=0, verbose=False)
         success_rates[idx] += np.array(success_rate)
+    success_rates = np.round(success_rates,decimals=5)
     savepath = os.path.join(os.path.join(os.getcwd(), 'Data'), f'{prefix}Success_Rates_{seed}.csv')
     df = pd.DataFrame({
         f"{models[n%n_models]['name']}/{environments[n//n_models]['name']}": success_rates[:,n] for n in range(n_contexts)
@@ -70,6 +71,7 @@ def grid_search(config, seed: int):
     for idx, results in enumerate(meta_results):
         test_rate = success_metrics(config, results, 1, test_ratio=0.1, verbose=False)
         test_rates[idx] += np.array(test_rate)
+    test_rates = np.round(test_rates,decimals=5)
     savepath = os.path.join(os.path.join(os.getcwd(), 'Data'), f'{prefix}Test_Rates_{seed}.csv')
     df = pd.DataFrame({
         f"{models[n%n_models]['name']}/{environments[n//n_models]['name']}": test_rates[:,n] for n in range(n_contexts)
@@ -80,6 +82,7 @@ def grid_search(config, seed: int):
     for idx, results in enumerate(meta_results):
         auc_results = auc(config, results, 1, verbose=False)
         aucs[idx] += np.array(auc_results)
+    aucs = np.round(aucs,decimals=5)
     savepath = os.path.join(os.path.join(os.getcwd(), 'Data'), f'{prefix}AUCs_{seed}.csv')
     df = pd.DataFrame({
         f"{models[n%n_models]['name']}/{environments[n//n_models]['name']}": aucs[:,n] for n in range(n_contexts)
