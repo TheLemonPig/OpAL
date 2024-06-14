@@ -27,7 +27,7 @@ class OpALStar(BaseRL):
         self.history = [[] for _ in range(action_space[0])]
         self.hs = np.ones(action_space) * 0.5
         self.use_hs = hs
-        self.qs = np.ones(action_space) * 0.5
+        self.qs = np.ones(state_space+action_space) * 0.5
         self.gs = np.ones(state_space+action_space) * 1.0
         self.ns = np.ones(state_space+action_space) * 1.0
         self.eta_c = 1
@@ -83,8 +83,8 @@ class OpALStar(BaseRL):
             self.anneal = 1
 
     def update_critic(self, new_state, action, reward):
-        delta = reward - self.qs[action] + self.qs.max() * self.gamma * (not self.at_terminal)
-        self.qs[action] += self.alpha_c * delta
+        delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma * (not self.at_terminal)
+        self.qs[self.state][action] += self.alpha_c * delta
         return delta
 
     def update_actor(self, action, delta):

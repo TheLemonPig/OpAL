@@ -5,12 +5,12 @@ from environments.environment import BaseEnvironment
 
 class BanditTask(BaseEnvironment):
 
-    def __init__(self, interactions, state_space, start_state, rewards=None, deterministic=False, ps=None, name=None, std=0,
+    def __init__(self, interactions, state_space, start_state, rewards=None, deterministic=False, ps=None, name=None, stds=None,
                  **kwargs):
         BaseEnvironment.__init__(self, interactions=interactions, state_space=state_space, start_state=start_state,
                                  name=name)
         self.deterministic = deterministic
-        self.std = std
+        self.stds = stds
         self.state_action_space = np.array(ps)
         if len(state_space) == 1 and state_space[0] == 1:
             self.state_action_space = np.array(ps).reshape((1, -1))
@@ -21,10 +21,10 @@ class BanditTask(BaseEnvironment):
         if self.deterministic:
             reward = p
         else:
-            if self.std == 0:
+            if self.stds is None:
                 reward = np.random.binomial(size=1, n=1, p=p).item()
             else:
-                reward = np.random.normal(p, self.std)
+                reward = np.random.normal(p, self.stds[action])
             self.model_state = tuple(np.random.randint(self.state_space))
         reward = reward * self.rewards[self.model_state][action]
         return self.model_state, reward, True

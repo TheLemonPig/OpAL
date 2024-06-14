@@ -5,10 +5,13 @@ import matplotlib.pyplot as plt
 import os
 
 # prefix = ''
+# data = 'Test_Rates'
+# data = 'AUCs'
+data = 'Success_Rates'
 prefix = 'OpAL_'
 current_directory = os.getcwd()
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
-datapath = f'{parent_directory}/OpAL/Compiled_Data/{prefix}AUCs_Compiled.csv'
+datapath = f'{parent_directory}/OpAL/Compiled_Data/{prefix}{data}_Compiled.csv'
 
 try:
     compiled_aucs = pd.read_csv(datapath)[1:].to_numpy()
@@ -18,9 +21,11 @@ except FileNotFoundError:
 if type(compiled_aucs[0,0]) == str:
     compiled_aucs = compiled_aucs[:,1:]
 
+compiled_aucs = compiled_aucs[:,8:]
+
 if prefix == 'OpAL_':
     lean_aucs = compiled_aucs[:,:2]
-    rich_aucs = compiled_aucs[:,2:]
+    rich_aucs = compiled_aucs[:,2:4]
 
     fig, ax = plt.subplots(2, 1)
     # 

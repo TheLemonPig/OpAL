@@ -19,7 +19,7 @@ class OpALPlus(BaseRL):
         self.T = T
         self.anneal_method = anneal_method
         self.visitation_counter = np.zeros(state_space+action_space)
-        self.qs = np.ones(action_space) * 0.5
+        self.qs = np.ones(state_space+action_space) * 0.5
         self.gs = np.ones(state_space+action_space) * 1.0
         self.ns = np.ones(state_space+action_space) * 1.0
         self.eta_c = 1
@@ -69,12 +69,12 @@ class OpALPlus(BaseRL):
         # # States
         # delta = reward - self.vs[self.state] + self.vs[new_state] * self.gamma
         # self.vs[self.state] += self.alpha_c * delta
-        # # State-actions
-        # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
-        # self.qs[self.state][action] += self.alpha_c * delta
+        # State-actions
+        delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma * (not self.at_terminal)
+        self.qs[self.state][action] += self.alpha_c * delta
         # # Actions
-        delta = reward - self.qs[action] + self.qs.max() * self.gamma * (not self.at_terminal)
-        self.qs[action] += self.alpha_c * delta
+        # delta = reward - self.qs[action] + self.qs.max() * self.gamma * (not self.at_terminal)
+        # self.qs[action] += self.alpha_c * delta
         # # Mix-up
         # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
         # self.qs[self.state] += self.alpha_c * delta

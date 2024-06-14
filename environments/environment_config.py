@@ -54,28 +54,65 @@ bandit_task_medium_rich = {
     "interactions": [0, 1, 2, 3]
 }
 
-bandit_task_small_sparse_gaussian = {
-    "name": 'BanditTaskSmallSparseGaussian',
+bandit_task_small_binary_gaussian = {
+    "name": 'BanditTaskSmallBinaryGaussian',
     "model": 'BanditTask',
     "state_space": (1,),
     "start_state": (0,),
     "deterministic": False,
-    "ps": [0.3, 0.2],
+    "ps": [1.0, 0.0],
     "success_actions": [0],
     "interactions": [0, 1],
-    "std": 0.5
+    "stds": [0.5, 0.5]
 }
 
-bandit_task_small_rich_gaussian = {
-    "name": 'BanditTaskSmallRichGaussian',
+bandit_task_small_nonbinary_gaussian = {
+    "name": 'BanditTaskSmallNonbinaryGaussian',
     "model": 'BanditTask',
     "state_space": (1,),
     "start_state": (0,),
     "deterministic": False,
-    "ps": [0.8, 0.7],
+    "ps": [2.5, -1.5],
     "success_actions": [0],
     "interactions": [0, 1],
-    "std": 0.5
+    "stds": [2.0, 2.0]
+}
+
+bandit_task_bogacz_gaussian = {
+    "name": 'BanditTaskBogaczGaussian',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "guassian": True,
+    "ps": [0.55, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45],
+    "success_actions": [0],
+    "interactions": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "stds": [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3]
+}
+
+bandit_task_bogacz_sparse_bernoulli = {
+    "name": 'BanditTaskBogaczSparseBernoulli',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "guassian": False,
+    "ps": [0.55, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45],
+    "success_actions": [0],
+    "interactions": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+}
+
+bandit_task_bogacz_rich_bernoulli = {
+    "name": 'BanditTaskBogaczRichBernoulli',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "guassian": False,
+    "ps": [0.9, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8],
+    "success_actions": [0],
+    "interactions": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
 }
 
 # In-between worlds
