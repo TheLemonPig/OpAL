@@ -201,6 +201,8 @@ grid_bandit_medium_rich = {
     "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
     "obstacles": None
 }
+
+# Grid Worlds
 grid_world_3x1_sparse = {
     "name": 'GridWorld3x1Sparse',
     "model": 'GridWorld',
@@ -225,8 +227,54 @@ grid_world_3x1_rich = {
     "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
     "obstacles": None
 }
-
-# Grid Worlds
+grid_world_3x2_sparse = {
+    "name": 'GridWorld3x2Sparse',
+    "model": 'GridWorld',
+    "state_space": (3, 2),
+    "start_state": (1, 0),
+    "non_terminal_penalty": -0.04,
+    "terminal_states": {(0, 1): 0.2, (2, 1): 0.3},
+    "deterministic": False,
+    "success_terminals": [(2, 1)],
+    "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
+    "obstacles": None
+}
+grid_world_3x2_rich = {
+    "name": 'GridWorld3x2Rich',
+    "model": 'GridWorld',
+    "state_space": (3, 2),
+    "start_state": (1, 0),
+    "non_terminal_penalty": -0.04,
+    "terminal_states": {(0, 1): 0.7, (2, 1): 0.8},
+    "deterministic": False,
+    "success_terminals": [(2, 1)],
+    "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
+    "obstacles": None
+}
+grid_world_3x3_sparse = {
+    "name": 'GridWorld3x3Sparse',
+    "model": 'GridWorld',
+    "state_space": (3, 3),
+    "start_state": (1, 0),
+    "non_terminal_penalty": -0.04,
+    "terminal_states": {(0, 2): 0.2, (2, 2): 0.3},
+    "deterministic": False,
+    "success_terminals": [(2, 2)],
+    "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
+    "obstacles": None
+}
+grid_world_3x3_rich = {
+    "name": 'GridWorld3x3Rich',
+    "model": 'GridWorld',
+    "state_space": (3, 3),
+    "start_state": (1, 0),
+    "non_terminal_penalty": -0.04,
+    "terminal_states": {(0, 2): 0.7, (2, 2): 0.8},
+    "deterministic": False,
+    "success_terminals": [(2, 2)],
+    "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
+    "obstacles": None
+}
 
 grid_world_small_sparse = {
     "name": 'GridWorldSmallSparse',
