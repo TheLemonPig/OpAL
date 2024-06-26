@@ -19,7 +19,7 @@ class ActorCritic(BaseRL):
         action = np.random.choice(len(p_values), 1, p=p_values).item()
         return action
 
-    def update(self, new_state, action, reward):
+    def update(self, new_state, action, reward, terminal):
         delta = self.update_critic(new_state, reward)
         self.update_actor(action, delta)
         self.state = new_state

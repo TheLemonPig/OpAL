@@ -115,6 +115,43 @@ bandit_task_bogacz_rich_bernoulli = {
     "interactions": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
 }
 
+bandit_task_mini_bogacz_gaussian = {
+    "name": 'BanditTaskMiniBogaczGaussian',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "guassian": True,
+    "ps": [0.55, 0.45],
+    "success_actions": [0],
+    "interactions": [0, 1],
+    "stds": [0.3, 0.3]
+}
+
+bandit_task_mini_bogacz_sparse_bernoulli = {
+    "name": 'BanditTaskMiniBogaczSparseBernoulli',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "guassian": False,
+    "ps": [0.55, 0.45],
+    "success_actions": [0],
+    "interactions": [0, 1],
+}
+
+bandit_task_mini_bogacz_rich_bernoulli = {
+    "name": 'BanditTaskMiniBogaczRichBernoulli',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "guassian": False,
+    "ps": [0.9, 0.8],
+    "success_actions": [0],
+    "interactions": [0, 1],
+}
+
 # In-between worlds
 grid_bandit_small_sparse = {
     "name": 'GridBanditSmallSparse',

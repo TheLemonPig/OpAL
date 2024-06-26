@@ -3,7 +3,7 @@
 actor_critic_ = {
     "name": 'ActorCritic',
     "model": 'ActorCritic',
-    "alpha": 0.1,
+    "alpha": 0.5,
     "beta": 1.0,
     "gamma": 0.0,
 }

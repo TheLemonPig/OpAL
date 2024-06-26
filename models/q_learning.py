@@ -20,7 +20,7 @@ class QLearning(BaseRL):
 
     # TODO: Put model responsible for restarting task
 
-    def update(self, new_state, action, reward):
+    def update(self, new_state, action, reward, terminal):
         delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
         self.qs[self.state][action] += self.alpha * delta
         self.state = new_state
