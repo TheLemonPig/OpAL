@@ -8,8 +8,9 @@ from scipy.stats import beta as beta_dist
 class OpALPlus(BaseRL):
 
     def __init__(self, action_space, state_space, start_state, alpha_c, alpha_g, alpha_n, beta, gamma, rho,
-                 r_mag=1, l_mag=-1, T=100, anneal_method='variance', name=None, **kwargs):
+                 r_mag=1, l_mag=-1, T=100, anneal_method='variance', critic='actions', name=None, **kwargs):
         BaseRL.__init__(self, action_space=action_space, state_space=state_space, start_state=start_state, name=name)
+        self.critic = critic
         self.alpha_c = alpha_c
         self.alpha_g = alpha_g
         self.alpha_n = alpha_n
@@ -19,7 +20,9 @@ class OpALPlus(BaseRL):
         self.T = T
         self.anneal_method = anneal_method
         self.visitation_counter = np.zeros(state_space+action_space)
-        self.qs = np.ones(state_space+action_space) * 0.5
+        self.vs_stateaction = np.ones(state_space+action_space) * 0.5
+        self.vs_state = np.ones(state_space) * 0.5
+        self.vs_action = np.ones(action_space) * 0.5
         self.gs = np.ones(state_space+action_space) * 1.0
         self.ns = np.ones(state_space+action_space) * 1.0
         self.eta_c = 1
@@ -66,19 +69,23 @@ class OpALPlus(BaseRL):
             self.anneal = 1
 
     def update_critic(self, new_state, action, reward):
-        # # States
-        # delta = reward - self.vs[self.state] + self.vs[new_state] * self.gamma
-        # self.vs[self.state] += self.alpha_c * delta
-        # State-actions
-        delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma * (not self.at_terminal)
-        self.qs[self.state][action] += self.alpha_c * delta
-        # # Actions
-        # delta = reward - self.qs[action] + self.qs.max() * self.gamma * (not self.at_terminal)
-        # self.qs[action] += self.alpha_c * delta
-        # # Mix-up
-        # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma
-        # self.qs[self.state] += self.alpha_c * delta
-        return delta
+        if self.critic=="actions":
+            # Actions
+            delta = reward - self.vs_action[action] + self.vs_action.max() * self.gamma * (not self.at_terminal)
+            self.vs_action[action] += self.alpha_c * delta
+        elif self.critic=="states":
+            # States
+            delta = reward - self.vs_state[self.state] + self.vs_state[new_state] * self.gamma * (not self.at_terminal)
+            self.vs_state[self.state] += self.alpha_c * delta
+        elif self.critic=="state-actions":
+            # State-actions
+            delta = reward - self.vs_state[self.state][action] + self.vs_state[new_state].max() * self.gamma * (not self.at_terminal)
+            self.vs_state[self.state][action] += self.alpha_c * delta
+        else:
+            raise KeyError('critic type not included\nPlease choose from actions, states, state-actions\n')
+        # delta = reward - self.qs[self.state][action] + self.qs[new_state].max() * self.gamma * (not self.at_terminal)
+        # self.qs[self.state][action] += self.alpha_c * delta
+        return delta  
 
     def update_actor(self, action, delta):
         alpha_gt = self.alpha_g * self.anneal
@@ -90,7 +97,14 @@ class OpALPlus(BaseRL):
         return delta/(self.r_mag-self.l_mag)
 
     def get_weights(self):
-        return {"qs": self.qs, "gs": self.gs, "ns": self.ns}
+        if self.critic=="actions":
+            return {"vs": self.vs, "gs": self.gs, "ns": self.ns}
+        if self.critic=="states":
+            return {"vs": self.vs_states, "gs": self.gs, "ns": self.ns}
+        if self.critic=="state-actions":
+            return {"vs": self.vs_stateactions, "gs": self.gs, "ns": self.ns}
+        else:
+            raise KeyError('critic type not included\nPlease choose from actions, states, state-actions\n')   
 
     def get_optimal_policy(self):
         # This is out of date
