@@ -2,21 +2,21 @@ from environments.environment_config import *
 from models.model_config import *
 
 environments = [
-    #bandit_task_small_sparse,
-    #bandit_task_large_sparse,
+    bandit_task_small_sparse,
+    # bandit_task_large_sparse,
     # bandit_task_bogacz_gaussian,
     # bandit_task_bogacz_sparse_bernoulli,
     # bandit_task_bogacz_rich_bernoulli,
     # bandit_task_mini_bogacz_gaussian,
     # bandit_task_mini_bogacz_sparse_bernoulli,
     # bandit_task_mini_bogacz_rich_bernoulli,
-    # bandit_task_small_rich,
+    bandit_task_small_rich,
     # bandit_task_small_sparse,
     # bandit_task_small_rich,
     # grid_bandit_sparse,
     # grid_bandit_rich,
-    grid_world_3x1_sparse,
-    grid_world_3x1_rich
+    # grid_world_3x1_sparse,
+    # grid_world_3x1_rich
     # grid_world_small_rich,
     # grid_world_small_sparse
 ]
@@ -67,7 +67,7 @@ config_ = {
         }
     },
     "thin": 1,
-    "epochs": 500,
+    "epochs": 1000,
     "n_reps": 20,
     "test_ratio": 0.1,
     "environment_params": environments,
@@ -75,9 +75,9 @@ config_ = {
     "seed": range(1000),
     "hyperparams": {
         # 'T': (250000, 750000, 50000),
-        'alpha': (0.05,1,0.05),
+        'alpha': (0.3,0.8,0.05),
         'alpha_c': [0.025, 0.05, 0.1],
-        'beta': (1.0, 10, 0.5),
+        'beta': (3.0, 8, 0.5),
         # 'gamma': (0.95,0.98,0.01),
         #'phi': (0.5,2.5,0.2),
         #'k': (2.0, 22.0, 2.0)
