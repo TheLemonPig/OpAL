@@ -26,8 +26,8 @@ models = [
     # opal_star_qs_,
     opal_star_,
     # opal_star_hs,
-    opal_plus_,
-    q_learning_
+    # opal_plus_,
+    # q_learning_
 ]
 
 config_ = {

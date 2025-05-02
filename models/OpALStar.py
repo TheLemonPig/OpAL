@@ -71,7 +71,7 @@ class OpALStar(BaseRL):
             self.gamma_c += 1 - reward
             # self.eta_c += max(0,reward - self.l_mag)
             # self.gamma_c += max(0,self.r_mag - reward)
-        n_choices = self.vs.shape[0]
+        n_choices = self.vs_action.shape[0]
         mean, var = beta_dist.stats(self.eta_c/n_choices, self.gamma_c/n_choices, moments='mv')
         std = np.sqrt(var)
         S = int(mean - self.phi * std > 0.5 or mean + self.phi * std < 0.5)
@@ -113,11 +113,11 @@ class OpALStar(BaseRL):
 
     def get_weights(self):
         if self.critic=="actions":
-            return {"vs": self.vs, "gs": self.gs, "ns": self.ns}
+            return {"vs": self.vs_action, "gs": self.gs, "ns": self.ns}
         if self.critic=="states":
-            return {"vs": self.vs_states, "gs": self.gs, "ns": self.ns}
+            return {"vs": self.vs_state, "gs": self.gs, "ns": self.ns}
         if self.critic=="state-actions":
-            return {"vs": self.vs_stateactions, "gs": self.gs, "ns": self.ns}
+            return {"vs": self.vs_stateaction, "gs": self.gs, "ns": self.ns}
         else:
             raise KeyError('critic type not included\nPlease choose from actions, states, state-actions\n')      
 
@@ -155,7 +155,12 @@ class OpALStar(BaseRL):
         return p_values
 
     def reinitialize_weights(self):
-        self.qs = np.ones_like(self.qs) * 0.5
+        if self.critic=="actions":
+            self.vs_action = np.ones_like(self.vs_action) * 0.5
+        if self.critic=="states":
+            self.vs_state = np.ones_like(self.vs_state) * 0.5
+        if self.critic=="state-actions":
+            self.vs_stateaction = np.ones_like(self.vs_stateaction) * 0.5
         self.hs = np.ones_like(self.hs) * 0.5
         self.gs = np.ones_like(self.gs)
         self.ns = np.ones_like(self.ns)
