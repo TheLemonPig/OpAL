@@ -7,17 +7,17 @@ environments = [
     # bandit_task_bogacz_gaussian,
     # bandit_task_bogacz_sparse_bernoulli,
     # bandit_task_bogacz_rich_bernoulli,
-    bandit_task_mini_bogacz_gaussian,
-    bandit_task_mini_bogacz_sparse_bernoulli,
-    bandit_task_mini_bogacz_rich_bernoulli,
+    # bandit_task_mini_bogacz_gaussian,
+    # bandit_task_mini_bogacz_sparse_bernoulli,
+    # bandit_task_mini_bogacz_rich_bernoulli,
     # bandit_task_small_rich,
     # bandit_task_small_sparse,
     # bandit_task_small_rich,
     # grid_bandit_sparse,
     # grid_bandit_rich,
-    # grid_world_3x1_sparse,
-    # grid_world_3x1_rich
-    #grid_world_small_rich,
+    grid_world_3x1_sparse,
+    grid_world_3x1_rich
+    # grid_world_small_rich,
     # grid_world_small_sparse
 ]
 
