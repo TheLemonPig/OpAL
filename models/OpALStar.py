@@ -63,12 +63,12 @@ class OpALStar(BaseRL):
 
     def update_metacritic(self, reward):
         if self.at_terminal:
-            # if reward >= 0.5:
-            #     self.eta_c += 1
-            # else:
-            #     self.gamma_c += 1
-            self.eta_c += reward
-            self.gamma_c += 1 - reward
+            if reward >= 0.5:
+                self.eta_c += 1
+            else:
+                self.gamma_c += 1
+            # self.eta_c += reward
+            # self.gamma_c += 1 - reward
             # self.eta_c += max(0,reward - self.l_mag)
             # self.gamma_c += max(0,self.r_mag - reward)
         n_choices = self.vs_action.shape[0]

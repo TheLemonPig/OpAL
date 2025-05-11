@@ -2,7 +2,7 @@ from environments.environment_config import *
 from models.model_config import *
 
 environments = [
-    bandit_task_small_sparse,
+    # bandit_task_small_sparse,
     # bandit_task_large_sparse,
     # bandit_task_bogacz_gaussian,
     # bandit_task_bogacz_sparse_bernoulli,
@@ -10,24 +10,30 @@ environments = [
     # bandit_task_mini_bogacz_gaussian,
     # bandit_task_mini_bogacz_sparse_bernoulli,
     # bandit_task_mini_bogacz_rich_bernoulli,
-    bandit_task_small_rich,
+    #bandit_task_small_rich,
     # bandit_task_small_sparse,
-    # bandit_task_small_rich,
+    #bandit_task_small_rich,
     # grid_bandit_sparse,
     # grid_bandit_rich,
     # grid_world_3x1_sparse,
-    # grid_world_3x1_rich
-    # grid_world_small_rich,
-    # grid_world_small_sparse
+    # grid_world_3x1_rich,
+    #grid_world_3x2_sparse,
+    #grid_world_3x2_rich,
+    #grid_world_small_rich,
+    #grid_world_small_sparse
+    bandit_task_pigeon_easy,
+    bandit_task_pigeon_normal,
+    bandit_task_pigeon_difficult
 ]
 
 models = [
-    actor_critic_,
+    #actor_critic_,
     # opal_star_qs_,
-    opal_star_,
+    # opal_star_,
     # opal_star_hs,
-    # opal_plus_,
-    # q_learning_
+    opal_plus_,
+    opal_plus_no_hebb,
+    #q_learning_
 ]
 
 config_ = {
@@ -63,12 +69,13 @@ config_ = {
             'anneal': True,
             'weights': True,
             'probabilities': True,
-            'success_probability': True
+            'compare_probabilities': True,
+            'success_probability': True,
         }
     },
     "thin": 1,
-    "epochs": 1000,
-    "n_reps": 20,
+    "epochs": 50,
+    "n_reps": 00,
     "test_ratio": 0.1,
     "environment_params": environments,
     "model_params": models,

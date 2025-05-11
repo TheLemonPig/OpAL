@@ -324,3 +324,34 @@ grid_world_large_rich = {
     "interactions": [(1, 0), (0, 1), (-1, 0), (0, -1)],
     "obstacles": [(0,0),(1,3),(2,3),(4,3),(1,0),(1,1),(3,0),(3,1)]
 }
+
+bandit_task_pigeon_easy = {
+    "name": 'BanditTaskPigeonEasy',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "ps": [0.05, 0.4, 0.75],
+    "success_actions": [2],
+    "interactions": [0, 1, 2]
+}
+bandit_task_pigeon_normal = {
+    "name": 'BanditTaskPigeonNormal',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "ps": [0.15, 0.4, 0.65],
+    "success_actions": [2],
+    "interactions": [0, 1, 2]
+}
+bandit_task_pigeon_difficult = {
+    "name": 'BanditTaskPigeonDifficult',
+    "model": 'BanditTask',
+    "state_space": (1,),
+    "start_state": (0,),
+    "deterministic": False,
+    "ps": [0.25, 0.4, 0.55],
+    "success_actions": [2],
+    "interactions": [0, 1, 2]
+}

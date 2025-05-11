@@ -424,6 +424,30 @@ def plot_trends(config, results, n_reps, **kwargs):
                 plt.ylim((0,1))
                 plt.title(f"{mod_dic['name']} Probabilities in {env_dic['name']}")
                 plt.show()
+    if kwargs['compare_probabilities']:
+        for env_dic in config['environment_params']:
+            title=f"Probabilities in {env_dic['name']}"
+            for mod_dic in config['model_params']:
+                p_values = results[env_dic['name']][mod_dic['name']][0]['probabilities']
+                p_array = np.zeros_like(p_values)
+                for n in range(n_reps):
+                    p_array += results[env_dic['name']][mod_dic['name']][n]['probabilities']
+                p_array = p_array / n_reps
+                ste_array = np.zeros_like(p_values)
+                for n in range(n_reps):
+                    ste_array += abs(p_array - results[env_dic['name']][mod_dic['name']][n]['probabilities'])/np.sqrt(n_reps)
+                ste_array = ste_array / n_reps
+                p_indices = list(product(*[range(d) for d in p_array.shape[:-1]]))
+                for jdx, index in enumerate(p_indices):
+                    plt.errorbar(x=np.arange(config['epochs']), y=p_array[index], yerr=ste_array[index], ecolor=((jdx + 1) / len(p_indices), 0, 0, 0.5))
+                    plt.plot(p_array[index], label=f'{index}', color=((jdx + 1) / len(p_indices), 0, 0, 0.25))
+                title+='/ '+mod_dic['name']+' '
+            plt.title(title)
+            plt.xlabel('Epochs')
+            plt.ylabel('Probability')
+            plt.legend()
+            plt.ylim((0,1))
+            plt.show()
     if kwargs['success_probability']:
         for env_dic in config['environment_params']:
             for mod_dic in config['model_params']:

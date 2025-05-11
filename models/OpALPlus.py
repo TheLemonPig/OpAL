@@ -8,7 +8,7 @@ from scipy.stats import beta as beta_dist
 class OpALPlus(BaseRL):
 
     def __init__(self, action_space, state_space, start_state, alpha_c, alpha_g, alpha_n, beta, gamma, rho,
-                 r_mag=1, l_mag=-1, T=100, anneal_method='variance', critic='actions', name=None, **kwargs):
+                 r_mag=1, l_mag=-1, T=100, anneal_method='variance', critic='actions', name=None, hebb=True, **kwargs):
         BaseRL.__init__(self, action_space=action_space, state_space=state_space, start_state=start_state, name=name)
         self.critic = critic
         self.alpha_c = alpha_c
@@ -32,6 +32,7 @@ class OpALPlus(BaseRL):
         self.l_mag = l_mag
         self.action = None
         self.at_terminal = False
+        self.hebb=hebb
         if self.anneal_method == 'variance' or self.anneal_method == 'qs':
             _, var = beta_dist.stats(self.eta_c, self.gamma_c, moments='mv')
             self.anneal = 1/(1+1/(self.T*var))
@@ -90,8 +91,12 @@ class OpALPlus(BaseRL):
     def update_actor(self, action, delta):
         alpha_gt = self.alpha_g * self.anneal
         alpha_nt = self.alpha_n * self.anneal
-        self.gs[self.state][action] += alpha_gt * self.f(delta) * self.gs[self.state][action]
-        self.ns[self.state][action] += alpha_nt * self.f(-delta) * self.ns[self.state][action]
+        if self.hebb:
+            self.gs[self.state][action] += alpha_gt * self.f(delta) * self.gs[self.state][action]
+            self.ns[self.state][action] += alpha_nt * self.f(-delta) * self.ns[self.state][action]
+        else:
+            self.gs[self.state][action] += alpha_gt * self.f(delta)
+            self.ns[self.state][action] += alpha_nt * self.f(-delta)
 
     def f(self, delta):
         return delta/(self.r_mag-self.l_mag)

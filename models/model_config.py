@@ -33,6 +33,24 @@ opal_plus_ = {
     "anneal_method": 'variance'
 }
 
+opal_plus_no_hebb = {
+    "name": 'OpALPlusNoHebb',
+    "model": 'OpALPlus',
+    "alpha_g": 0.9,
+    "alpha_n": 0.9,
+    "alpha_c": 0.05,
+    "beta": 1.5,
+    "gamma": 0.0,
+    "rho": 0,
+    "phi": 1.0,
+    "k": 20,
+    "T": 100.0,
+    "r_mag": 1.0,
+    "l_mag": 0,
+    "anneal_method": 'variance',
+    "hebb": False,
+}
+
 opal_star_ = {
     "name": 'OpALStar',
     "model": 'OpALStar',
